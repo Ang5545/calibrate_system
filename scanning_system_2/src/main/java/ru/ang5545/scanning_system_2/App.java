@@ -11,9 +11,7 @@ import ru.ang5545.scanning_system_2.gui.MainFrame;
 public class App {
 	
 	public static void createGUI() {
-    	CalibPanel calibPanel = new CalibPanel();
-    	MainFrame mainfr = new MainFrame();
-    	mainfr.add( calibPanel );         
+    	MainFrame fr = new MainFrame();
    }
    
 	public static void main(String[] args) {
