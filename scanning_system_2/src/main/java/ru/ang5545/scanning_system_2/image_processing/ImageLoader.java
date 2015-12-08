@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSize;
 
@@ -86,6 +87,7 @@ public class ImageLoader {
 	public BufferedImage get_Canny_rgb (int min, int max){
 		IplImage canny = canny(rgb, min, max);
 		IplImage countors = findCountors(canny);
+		IplImage cerners = cornerHarris(canny);
 		return countors.getBufferedImage();
 	}
 	
@@ -130,12 +132,10 @@ public class ImageLoader {
 	}
 	
 	public IplImage findCountors( IplImage image ){
-		IplImage resImg = cvCloneImage(img);
+		IplImage resImg = cvCloneImage(image);
 		resImg = fillingImage( resImg, 255, 255, 255);
 		
 	    CvSeq contours = new CvSeq();
-	    
-	    ArrayList<Map<String, Object>> rects = new ArrayList<Map<String, Object>>();
 	    
 		cvFindContours(
 			image,							// - исходное 8-битное одноканальное изображение 
@@ -146,7 +146,7 @@ public class ImageLoader {
 			contours,						// - указатель, который будет указывать на первый элемент последовательности,
 											//   содержащей данные найденных контуров
 			Loader.sizeof(CvContour.class),	//   размер заголовка элемента последовательности
-			CV_RETR_LIST,					// - режим поиска
+			CV_RETR_EXTERNAL,				// - режим поиска
 											//   CV_RETR_EXTERNAL 0 // найти только крайние внешние контуры
 											//   CV_RETR_LIST     1 // найти все контуры и разместить их списком
 											//   CV_RETR_CCOMP    2 // найти все контуры и разместить их в виде 2-уровневой иерархии
@@ -161,13 +161,71 @@ public class ImageLoader {
 		);
 
 		// - добавление всех найденных контуров в массив и поиск наибольшего -
-	    CvSeq zw = new CvSeq();
+		
+		ArrayList<Map<String, Object>> rects = new ArrayList<Map<String, Object>>();
+		CvSeq zw = new CvSeq();
+	    double maxArcLength = 0; 
+	    
 	    if(contours != null) {
-	        for (zw = contours; zw != null; zw = zw.h_next()) {    	
-	            cvDrawContours(resImg, zw, CV_RGB(255,0,0), CV_RGB(0,0,0), 0, 1, 8);	            
+	        for (zw = contours; zw != null; zw = zw.h_next()) {
+	        	cvDrawContours(resImg, zw, CV_RGB(255,0,0), CV_RGB(0,0,0), 0, 1, 8);
+//	        	double arcLength = cvArcLength(zw);
+//	            if ( arcLength > maxArcLength ){
+//	            	maxArcLength = arcLength;
+//	            }
+//	            Map<String, Object> mp = new HashMap<String, Object>();
+//	            mp.put("arcLength", arcLength);
+//	            mp.put("contour", 	zw);
+//	            rects.add(mp);
 	        }
 	    }
+//	        boolean draw = true;
+//	        int i = 0;
+//	        while( draw ){
+//	        	Map<String, Object> mp = rects.get(i);
+//	        	
+//	        	if ( (maxArcLength == (Double) mp.get("arcLength")) ){
+//	        		cvDrawContours(resImg, (CvSeq) mp.get("contour"), CV_RGB(255,0,0), CV_RGB(0,0,0), 0, 1, 8);
+//	        		draw = false;
+//	        	}
+//	        	if (i < rects.size())
+//	        		draw = false;
+//	        }
+//	        
+////	        for ( int i = 0; i < rects.size(); i++ ){
+////	        	Map<String, Object> mp = rects.get(i);
+////	        	System.out.println("maxArcLength = "+maxArcLength+"; arcLength = "+(Double) mp.get("arcLength")
+////	        		+"; compare =  " + (maxArcLength == (Double) mp.get("arcLength")));
+////	        }
+//	    }
+	    
 	    return resImg;
 	}
 
+	public IplImage detectCorners( IplImage image ){
+		IplImage resImg = cvCloneImage(image);
+		
+		/// Detector parameters
+		int blockSize = 2;
+		int apertureSize = 3;
+		double k = 0.04;
+		
+		Mat src_gray = new Mat();
+		Mat imgMat = cvarrToMat(img); 
+		
+		cornerHarris(imgMat, src_gray, blockSize, apertureSize, k);
+		
+//		for( int j = 0; j < src_gray.rows() ; j++ ){ 
+//			for( int i = 0; i < src_gray.cols(); i++ ){
+//				if( (int) src_gray.
+//						
+//						at<float>(j,i) > thresh )
+//		              {
+//		               circle( src_gray, Point( i, j ), 5,  Scalar(0), 2, 8, 0 );
+//		              }
+//		          }
+//		     }
+		return resImg;
+	}
+	
 }

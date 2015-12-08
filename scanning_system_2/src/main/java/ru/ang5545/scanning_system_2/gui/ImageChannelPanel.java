@@ -84,6 +84,11 @@ public class ImageChannelPanel extends ImagePanel {
 	        if (!source.getValueIsAdjusting()) {
 	        	minTh = (int)source.getValue();
 	        	minThField.setText( String.valueOf( minTh ));
+	        	if ( minTh > maxTh ){
+	        		maxTh = minTh + 1;
+	        		maxThField.setText( String.valueOf( maxTh ));
+	        		max_slider.setValue( maxTh );
+	        	}
 	        }    
 	    }
 	}
@@ -94,6 +99,11 @@ public class ImageChannelPanel extends ImagePanel {
 	        if (!source.getValueIsAdjusting()) {
 	        	maxTh = (int)source.getValue();
 	        	maxThField.setText( String.valueOf( maxTh ));
+	        	if ( maxTh < minTh ){
+	        		minTh = maxTh - 1;
+	        		minThField.setText( String.valueOf( minTh ));
+	        		min_slider.setValue( minTh );
+	        	}
 	        }    
 	    }
 	}
