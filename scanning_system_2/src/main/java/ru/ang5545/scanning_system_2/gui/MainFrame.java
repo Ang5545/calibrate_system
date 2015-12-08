@@ -2,6 +2,7 @@ package ru.ang5545.scanning_system_2.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.SwingWorker;
 
-import ru.ang5545.image_processing.ImageLoader;
+import ru.ang5545.scanning_system_2.image_processing.ImageLoader;
 
 
 public class MainFrame extends JFrame{
@@ -27,11 +28,12 @@ public class MainFrame extends JFrame{
 	
 	private ImageLoader imgLoad;
 	
-	private JButton startGrab;
-	private JButton stopGrab;
+	private CalibPanel calPan;
 	
 	private ImagePanel imgPan;
 	private ImagePanel rgb;
+	private ImagePanel canny;
+	
 	private ImageChannelPanel red_imgChPan;
 	private ImageChannelPanel green_imgChPan;
 	private ImageChannelPanel blue_imgChPan;
@@ -47,38 +49,59 @@ public class MainFrame extends JFrame{
 		
 		this.imgLoad = new ImageLoader();
 		
+		this.calPan = new CalibPanel();
+		this.calPan.addStartAction( new StartGrub() );
+		this.calPan.addStoptAction( new StopGrub()  );
+		this.add(calPan, BorderLayout.LINE_END);
+		
 		this.getContentPane().add(createMainImagePanel(), 	BorderLayout.LINE_START);
-		this.getContentPane().add(createControlPanel(), 	BorderLayout.LINE_END);
 		this.getContentPane().add(create_rgb_Panel(), 		BorderLayout.PAGE_END);
 		
 		this.pack();
 		this.setVisible(true);
 	}
 
-	private JPanel createControlPanel(){
-		JPanel panel = new JPanel();
-		
-		this.startGrab = new JButton("Start grab");
-		this.startGrab.addActionListener( new StartGrub() );
-		
-		this.stopGrab = new JButton("StopGrab");
-		this.stopGrab.addActionListener( new StopGrub() );
-		
-		panel.add( this.startGrab) ;
-		panel.add( this.stopGrab) ;
-
-		panel = setDimension(panel, 220, 100);
-		return panel; 
+	
+	
+	public void add(Component comp, BorderFactory layFact){
+		this.getContentPane().add(comp, layFact);
 	}
 	
+	
+	
+	
+	
+//	private JPanel createControlPanel(){
+//		JPanel panel = new JPanel();
+//		
+//		this.startGrab = new JButton("Start grab");
+//		this.startGrab.addActionListener( new StartGrub() );
+//		
+//		this.stopGrab = new JButton("StopGrab");
+//		this.stopGrab.addActionListener( new StopGrub() );
+//		
+//		panel.add( this.startGrab) ;
+//		panel.add( this.stopGrab) ;
+//
+//		panel = setDimension(panel, 220, 100);
+//		return panel; 
+//	}
+	
 	private JPanel createMainImagePanel(){
+		
 		imgPan = new ImagePanel(300, 300);
 		imgPan.setImage( imgLoad.getEmptyImage());
+		
 		rgb = new ImagePanel(300, 300);
 		rgb.setImage( imgLoad.getEmptyImage());
+		
+		canny = new ImagePanel(300, 300);
+		canny.setImage( imgLoad.getEmptyImage());
+		
 		JPanel jp = new JPanel();
 		jp.add(imgPan);
 		jp.add(rgb);
+		jp.add(canny);
 		return jp; 
 	}
 	
@@ -134,14 +157,22 @@ public class MainFrame extends JFrame{
 			while(doIt) {
 				Thread.sleep(1000);
 				imgLoad.loadImage();
+				
 				imgPan.setImage( imgLoad.getImage() );
+				
 				red_imgChPan.setImage( 
 						imgLoad.get_r_plImage(red_imgChPan.minTh, red_imgChPan.maxTh) );
+				
 				green_imgChPan.setImage(
 						imgLoad.get_g_plImage(green_imgChPan.minTh, green_imgChPan.maxTh) );
+				
 				blue_imgChPan.setImage( 
 						imgLoad.get_b_plImage(blue_imgChPan.minTh, blue_imgChPan.maxTh) );
+				
 				rgb.setImage( imgLoad.get_RGB_image());
+				
+				canny.setImage( 
+						imgLoad.get_Canny_rgb(calPan.maxTh, calPan.minTh ) );
 			}
 			return "test";
 		}

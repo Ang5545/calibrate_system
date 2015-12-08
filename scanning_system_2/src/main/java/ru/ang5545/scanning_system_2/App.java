@@ -1,5 +1,6 @@
 package ru.ang5545.scanning_system_2;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 
 import javax.swing.JFrame;
@@ -10,8 +11,9 @@ import ru.ang5545.scanning_system_2.gui.MainFrame;
 
 public class App {
 	
+	
 	public static void createGUI() {
-    	MainFrame fr = new MainFrame();
+		MainFrame fr = new MainFrame();	
    }
    
 	public static void main(String[] args) {
