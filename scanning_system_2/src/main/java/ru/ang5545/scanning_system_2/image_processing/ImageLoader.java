@@ -87,7 +87,7 @@ public class ImageLoader {
 	public BufferedImage get_Canny_rgb (int min, int max){
 		IplImage canny = canny(rgb, min, max);
 		IplImage countors = findCountors(canny);
-		IplImage cerners = cornerHarris(canny);
+		IplImage cerners = detectCorners(canny);
 		return countors.getBufferedImage();
 	}
 	
