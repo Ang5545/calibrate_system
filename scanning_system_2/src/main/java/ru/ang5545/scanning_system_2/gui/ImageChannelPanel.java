@@ -40,8 +40,7 @@ public class ImageChannelPanel extends ImagePanel {
 
 		this.minTh = DEF_VALUE; 
 		this.maxTh = DEF_VALUE;
-		
-		
+
 		this.minThLabel = new JLabel(MIN_TH_LABEL);
 		this.minThField = new JTextField();
 		this.minThField.setPreferredSize( new Dimension( FILED_WEIGHT, FIELD_HEIGHT ) );
