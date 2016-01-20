@@ -6,7 +6,11 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -24,94 +28,85 @@ public class MainFrame extends JFrame{
 	
 	private static final String FRAME_NAME = "Scanning system";
 	
-	private static final int WEIGHT = 800;
-	private static final int HEIGHT = 600;
+	private static final int WINDOW_WIDTH = 800;
+	private static final int WINDOW_HEIGHT = 530;
 	
-	//private ImageLoader imgLoad;
+	private static final int IMG_PAN_WIDTH  = 300;
+	private static final int IMG_PAN_HEIGHT = 200;
+	
+	private AnswerWorker aw;
 	private Grabber grabber;
 	
 	private CalibPanel calPan;
 	
-	private ImagePanel imgPan;
-	private ImagePanel rgb;
-	private ImagePanel canny;
+	private ImagePanel origImg;
+	private ImagePanel sumChanImg;
+	private ImagePanel countImg;
 	
-	private ImageChannelPanel red_imgChPan;
-	private ImageChannelPanel green_imgChPan;
-	private ImageChannelPanel blue_imgChPan;
-	private AnswerWorker aw;
+	private ImageChannelPanel red_channelsPan;
+	private ImageChannelPanel green_channelsPan;
+	private ImageChannelPanel blue_channelsPan;
+
+	BufferedImage test;
 	
 	public MainFrame(){
 		super(FRAME_NAME);
-		this.setSize(WEIGHT, HEIGHT);
-		this.setMinimumSize(new Dimension(WEIGHT, HEIGHT));
+		
+		// - set window parameters - 
+		this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+		this.setMinimumSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
 		this.setResizable(false);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.getContentPane().setLayout(new BorderLayout());
 		
-		//this.imgLoad = new ImageLoader();
-		this.grabber = new Grabber();
+		// - add components -
+		JPanel centerPan = new JPanel();
+		centerPan.setLayout(new BorderLayout());
+		centerPan.add(createImagesPanel(), 		BorderLayout.PAGE_START);
+		centerPan.add(createСhannellsPanel(), 	BorderLayout.PAGE_END);
+		this.add(centerPan, 			BorderLayout.LINE_START);
+		this.add(createCalibPanel(),	BorderLayout.LINE_END);
 		
-		this.calPan = new CalibPanel();
-		this.calPan.addStartAction( new StartGrub() );
-		this.calPan.addStoptAction( new StopGrub()  );
-		this.add(calPan, BorderLayout.LINE_END);
-		
-		this.getContentPane().add(createMainImagePanel(), 	BorderLayout.LINE_START);
-		this.getContentPane().add(create_rgb_Panel(), 		BorderLayout.PAGE_END);
-		
+	}
+
+	public void showFrame() {
 		this.pack();
 		this.setVisible(true);
 	}
-
 	
-	
-	public void add(Component comp, BorderFactory layFact){
-		this.getContentPane().add(comp, layFact);
+	private JPanel createImagesPanel(){
+		JPanel imagesPanel = new JPanel();
+		origImg 	= new ImagePanel(IMG_PAN_WIDTH, IMG_PAN_HEIGHT, "Original Image");
+		sumChanImg 	= new ImagePanel(IMG_PAN_WIDTH, IMG_PAN_HEIGHT, "Summary Channels");
+		countImg 	= new ImagePanel(IMG_PAN_WIDTH, IMG_PAN_HEIGHT, "Contour");
+		imagesPanel.add(origImg);
+		imagesPanel.add(sumChanImg);
+		imagesPanel.add(countImg);
+		return imagesPanel;
 	}
 
-	
-	
-	private JPanel createMainImagePanel(){
-		
-		imgPan = new ImagePanel(300, 300);
-		imgPan.setImage( grabber.getImage());
-		
-		rgb = new ImagePanel(300, 300);
-		rgb.setImage( grabber.getImage());
-		
-		canny = new ImagePanel(300, 300);
-		canny.setImage( grabber.getImage());
-		
-		JPanel jp = new JPanel();
-		jp.add(imgPan);
-		jp.add(rgb);
-		jp.add(canny);
-		return jp; 
+	private JPanel createCalibPanel(){
+		calPan = new CalibPanel();
+		calPan.addStartAction( new StartGrub() );
+		calPan.addStoptAction( new StopGrub()  );
+		return calPan;
 	}
 	
-	
-	private JPanel create_rgb_Panel(){
-		JPanel pn = new JPanel();
-		
-		red_imgChPan = new ImageChannelPanel(250, 300, "Red Channel");
-		red_imgChPan.setImage( grabber.getImage() );
-		pn.add( red_imgChPan );
-		
-		green_imgChPan = new ImageChannelPanel(250, 300, "Green Channel");
-		green_imgChPan.setImage( grabber.getImage() );
-		pn.add( green_imgChPan );
-		
-		blue_imgChPan = new ImageChannelPanel(250, 300, "Blue Channel");
-		blue_imgChPan.setImage( grabber.getImage() );
-		pn.add( blue_imgChPan );
-		
-		return pn; 
+	private JPanel createСhannellsPanel(){
+		JPanel channelsPanel = new JPanel();	
+		red_channelsPan 	= new ImageChannelPanel(IMG_PAN_WIDTH, 300, "Red Channel");
+		green_channelsPan	= new ImageChannelPanel(IMG_PAN_WIDTH, 300, "Green Channel");
+		blue_channelsPan 	= new ImageChannelPanel(IMG_PAN_WIDTH, 300, "Blue Channel");		
+		channelsPanel.add(red_channelsPan);
+		channelsPanel.add(green_channelsPan);
+		channelsPanel.add(blue_channelsPan);
+		return channelsPanel; 
 	}
 	
 	
 	private class StartGrub implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
+			grabber = new Grabber();
 			aw = new AnswerWorker();
 			aw.execute();
 		}
@@ -119,34 +114,52 @@ public class MainFrame extends JFrame{
 	
 	private class StopGrub implements ActionListener{
 		public void actionPerformed(ActionEvent e) {
+
+			grabber.stopGrub();
 			aw.cancel(true);
+			
+			try {
+				File outputfile = new File("/Users/fedormurashko/Desktop/image.jpg");
+				ImageIO.write(test, "jpg", outputfile);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			};
 			
 		}
 	}	
 	
 
 	class AnswerWorker extends SwingWorker<String, Object>{
-	    
+		
 		private boolean doIt;
 		
 		protected String doInBackground() throws Exception{
 			doIt = true;
 			while(doIt) {
-				
+
+				int redMinTh 	= red_channelsPan.minTh;
+				int redMaxTh 	= red_channelsPan.maxTh;
+				int greenMinTh 	= green_channelsPan.minTh;
+				int greenMaxTh 	= green_channelsPan.maxTh;
+				int blueMinTh 	= blue_channelsPan.minTh;
+				int blueMaxTh 	= blue_channelsPan.maxTh;
+
 				grabber.snapShoot();
-				//imgLoad.loadImage();
+				BufferedImage image			= grabber.getImage();
+				BufferedImage redImage 		= grabber.get_r_plane(redMinTh, redMaxTh);
+				BufferedImage greenImage 	= grabber.get_g_plane(greenMinTh, greenMaxTh);
+				BufferedImage blueImage 	= grabber.get_b_plane(blueMinTh, blueMaxTh);
 				
-				imgPan.setImage( grabber.getImage() );
-				
-				red_imgChPan.setImage( grabber.get_r_plane( red_imgChPan.minTh, red_imgChPan.maxTh) );
-				green_imgChPan.setImage( grabber.get_g_plane( green_imgChPan.minTh, green_imgChPan.maxTh) );
-				
-				blue_imgChPan.setImage( grabber.get_b_plane(blue_imgChPan.minTh, blue_imgChPan.maxTh) );
-				
-				rgb.setImage( grabber.get_rgb_plane() );
-				canny.setImage( grabber.get_Canny_rgb(calPan.maxTh, calPan.minTh ) );
+				origImg.setImage(image);
+				red_channelsPan.setImage(redImage);
+				green_channelsPan.setImage(greenImage);
+				blue_channelsPan.setImage(blueImage);
+
+				sumChanImg.setImage( grabber.get_rgb_plane() );
+				countImg.setImage(grabber.get_Canny_rgb(calPan.maxTh, calPan.minTh ));
+
 			}
-			return "test";
+			return "succes";
 		}
 	
 		protected void done(){

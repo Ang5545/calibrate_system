@@ -13,8 +13,8 @@ import javax.swing.event.ChangeListener;
 
 public class CalibPanel extends AbstaractPanel{
 
-	private static final int HEIGHT = 250;
-	private static final int WIDTH 	= 250;
+	private static final int HEIGHT = 200;
+	private static final int WIDTH 	= 300;
 	
 	private static final String PANEL_TITLE = "Calibrate panel";
 	
