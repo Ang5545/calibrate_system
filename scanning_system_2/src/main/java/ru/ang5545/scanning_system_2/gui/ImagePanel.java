@@ -11,7 +11,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import ru.ang5545.scanning_system_2.image_processing.ImageHandler;
+import ru.ang5545.scanning_system_2.image_processing.ImageHelper;
 
 public class ImagePanel extends JPanel{
 
@@ -35,7 +35,7 @@ public class ImagePanel extends JPanel{
 		this.label 		= createLabel();
 		this.add(label);
 		this.setDimension(panWidth, panHeight);
-		this.setImage( ImageHandler.getEmptyImage(imgWidth, imgHeight) );
+		this.setImage( ImageHelper.getEmptyImage(imgWidth, imgHeight) );
 	}
 	
 	public ImagePanel(int panWidth, int panHeight, int imgWidth, int imgHeight){
@@ -47,7 +47,7 @@ public class ImagePanel extends JPanel{
 		this.label 		= createLabel();
 		this.add(label);
 		this.setDimension(panWidth, panHeight);
-		this.setImage( ImageHandler.getEmptyImage(imgWidth, imgHeight) );
+		this.setImage( ImageHelper.getEmptyImage(imgWidth, imgHeight) );
 	}
 	
 	private JLabel createLabel(){

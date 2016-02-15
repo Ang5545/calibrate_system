@@ -18,6 +18,7 @@ public class CalibPanel extends AbstaractPanel{
 	
 	private static final String PANEL_TITLE = "Calibrate panel";
 	
+	
 	private static final String START_BT_NAME = "Start grab";
 	private static final String STOP_BT_NAME  = "Stop Grab";
 	
@@ -50,7 +51,7 @@ public class CalibPanel extends AbstaractPanel{
 		
 		this.minTh = DEF_VALUE;
 		this.maxTh = DEF_VALUE;
-		
+
 		this.startGrab = new JButton(START_BT_NAME);
 		this.stopGrab = new JButton(STOP_BT_NAME);
 		
@@ -88,6 +89,8 @@ public class CalibPanel extends AbstaractPanel{
 		this.add(minThSlider) ;
 		this.add(maxThSlider) ;
 	}
+	
+	
 	
 	public void addStartAction(ActionListener act){
 		this.startGrab.addActionListener(act);
