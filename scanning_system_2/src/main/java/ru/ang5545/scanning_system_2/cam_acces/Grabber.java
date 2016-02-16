@@ -17,7 +17,7 @@ public class Grabber {
 	private IplImage grabbedImg;
 	
 	private int camIndex;
-	private CanvasFrame testFrame;
+	//private CanvasFrame testFrame;
 	
 	
 	public Grabber(int camIndex) {
@@ -25,7 +25,7 @@ public class Grabber {
 		this.capture 	= opencv_highgui.cvCreateCameraCapture( camIndex );
 		this.grabbedImg = opencv_highgui.cvQueryFrame( capture );
 //		this.grabbedImg = ImageHelper.getEmptyImage(DEF_HEIGHT, DEF_WIDTH );
-		testFrame = new CanvasFrame("Test");
+	//	testFrame = new CanvasFrame("Test");
 	}
 	
 	public void snapShoot(){

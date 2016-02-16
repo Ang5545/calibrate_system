@@ -46,7 +46,7 @@ public class ImageHandler {
 	private static final int DEF_HEIGHT = 200;
 	private static final int DEF_WIDTH  = 300;
 
-	private CanvasFrame testFrame;
+	//private CanvasFrame testFrame;
 	
 	
 	public ImageHandler() {
@@ -54,7 +54,7 @@ public class ImageHandler {
 		this.g_plane 	= getEmptyImage( DEF_HEIGHT, DEF_WIDTH );
 		this.b_plane 	= getEmptyImage( DEF_HEIGHT, DEF_WIDTH );
 		this.rgb_plane 	= getEmptyImage( DEF_HEIGHT, DEF_WIDTH );
-		testFrame = new CanvasFrame("Test");
+		//testFrame = new CanvasFrame("Test");
 	}
 
 	public void processImage(IplImage img) {
@@ -119,7 +119,7 @@ public class ImageHandler {
 //		    e1.printStackTrace();
 //		}
 		//IplImage cerners = detectCorners(canny);
-		testFrame.showImage(countors);
+		//testFrame.showImage(countors);
 		BufferedImage result = countors.getBufferedImage();
 		
 		//cvReleaseImage(canny);

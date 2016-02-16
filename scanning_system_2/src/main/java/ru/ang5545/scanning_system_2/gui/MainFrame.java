@@ -25,12 +25,13 @@ public class MainFrame extends JFrame{
 	private static final int WINDOW_WIDTH = 800;
 	private static final int WINDOW_HEIGHT = 530;
 	
-	private static final int IMG_PAN_WIDTH  = 300;
-	private static final int IMG_PAN_HEIGHT = 200;
+	private static final int IMG_PAN_WIDTH  = 200;
+	private static final int IMG_PAN_HEIGHT = 150;
+	private static final int IMG_PAN_WITH_SLIDER_HEIGHT = 250;
 	
 	private AnswerWorker aw;
-	private Grabber grabber;
-	//private ImageLoaderForTest grabber;
+	//private Grabber grabber;
+	private ImageLoaderForTest grabber;
 	private DeviceManager dm;
 	private ImageHandler ih;
 	
@@ -93,9 +94,9 @@ public class MainFrame extends JFrame{
 	
 	private JPanel createСhannellsPanel(){
 		JPanel channelsPanel = new JPanel();	
-		red_channelsPan 	= new ImageChannelPanel(IMG_PAN_WIDTH, 300, "Red Channel");
-		green_channelsPan	= new ImageChannelPanel(IMG_PAN_WIDTH, 300, "Green Channel");
-		blue_channelsPan 	= new ImageChannelPanel(IMG_PAN_WIDTH, 300, "Blue Channel");		
+		red_channelsPan 	= new ImageChannelPanel(IMG_PAN_WIDTH, IMG_PAN_WITH_SLIDER_HEIGHT, "Red Channel");
+		green_channelsPan	= new ImageChannelPanel(IMG_PAN_WIDTH, IMG_PAN_WITH_SLIDER_HEIGHT, "Green Channel");
+		blue_channelsPan 	= new ImageChannelPanel(IMG_PAN_WIDTH, IMG_PAN_WITH_SLIDER_HEIGHT, "Blue Channel");		
 		channelsPanel.add(red_channelsPan);
 		channelsPanel.add(green_channelsPan);
 		channelsPanel.add(blue_channelsPan);
@@ -105,8 +106,8 @@ public class MainFrame extends JFrame{
 	
 	private class StartGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
+			grabber = new ImageLoaderForTest();
 			//grabber = new Grabber(dm.getCamIndex());
-			grabber = new Grabber(dm.getCamIndex());
 			aw = new AnswerWorker();
 			aw.execute();
 		}
