@@ -7,7 +7,7 @@ import org.bytedeco.javacpp.videoInputLib.videoInput;
 
 public class DeviceManager {
 
-	private int camIndex = 0;
+	private int camIndex = 1;
 	
 	public int getCamIndex() {
 		return camIndex;

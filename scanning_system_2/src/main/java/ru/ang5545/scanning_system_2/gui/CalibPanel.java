@@ -3,6 +3,7 @@ package ru.ang5545.scanning_system_2.gui;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -15,6 +16,11 @@ public class CalibPanel extends AbstaractPanel{
 
 	private static final int HEIGHT = 200;
 	private static final int WIDTH 	= 300;
+	
+	
+	private static final int IMG_HEIGHT = 200;
+	private static final int IMG_WIDTH = 300;
+	
 	
 	private static final String PANEL_TITLE = "Calibrate panel";
 	
@@ -46,6 +52,12 @@ public class CalibPanel extends AbstaractPanel{
 	private JSlider maxThSlider;
 	
 	
+	
+	// contour IMAGE
+	private JLabel label;
+	
+	
+	
 	public CalibPanel(){
 		super(PANEL_TITLE, WIDTH, HEIGHT);
 		
@@ -60,34 +72,12 @@ public class CalibPanel extends AbstaractPanel{
 		btPan.add(stopGrab) ;
 		this.add(btPan);
 		
-		this.minThLabel = new JLabel(MIN_TH_LABEL);
-		this.minThField = new JTextField();
-		this.minThField.setPreferredSize( new Dimension( FILED_WEIGHT, FIELD_HEIGHT ) );
-		this.minThField.setText( String.valueOf( minTh ));
-		this.minThField.setEditable(false);
-		
-		JPanel minPan = new JPanel();
-		minPan.add(minThLabel);
-		minPan.add(minThField);
-		this.add(minPan);
-		
-		this.maxThLabel = new JLabel(MAX_TH_LABEL);
-		this.maxThField = new JTextField();
-		this.maxThField.setPreferredSize( new Dimension( FILED_WEIGHT, FIELD_HEIGHT ) );
-		this.maxThField.setText( String.valueOf( maxTh ));
-		this.maxThField.setEditable(false);
-		
-		JPanel maxPan = new JPanel();
-		maxPan.add(maxThLabel);
-		maxPan.add(maxThField);
-		this.add(maxPan);
+		JPanel labPan = new JPanel();
+		this.label = new JLabel();
 		
 		
-		this.minThSlider = createSlider(minTh, WIDTH-10, new MinThListener() );
-		this.maxThSlider = createSlider(maxTh, WIDTH-10, new MaxThListener() );
-		
-		this.add(minThSlider) ;
-		this.add(maxThSlider) ;
+		labPan.add(this.label);
+		this.add(labPan);
 	}
 	
 	

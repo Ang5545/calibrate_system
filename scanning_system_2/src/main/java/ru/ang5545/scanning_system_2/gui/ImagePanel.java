@@ -32,6 +32,7 @@ public class ImagePanel extends JPanel{
 		this.panHeight 	= height;
 		this.imgWidth	= width  - X_OFFSET;
 		this.imgHeight	= height - Y_OFFSET;
+		
 		this.label 		= createLabel();
 		this.add(label);
 		this.setDimension(panWidth, panHeight);

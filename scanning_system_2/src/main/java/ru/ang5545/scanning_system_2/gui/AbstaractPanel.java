@@ -11,7 +11,6 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.event.ChangeListener;
 
-import ru.ang5545.scanning_system_2.gui.ImageChannelPanel.MinListener;
 
 public class AbstaractPanel extends JPanel{
 

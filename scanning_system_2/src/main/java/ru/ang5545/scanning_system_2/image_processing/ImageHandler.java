@@ -105,25 +105,10 @@ public class ImageHandler {
 	
 	
 	
-	public BufferedImage get_Canny_rgb (int min, int max){
-		//IplImage canny = canny(rgb_plane, min, max);		
-		
-	//	IplImage rr =  cvCreateImage( cvGetSize( rgb_plane ), IPL_DEPTH_8U, 1 );
-		
-		IplImage countors = findCountors(rgb_plane);
-		
-//		try {
-//		    File outputfile = new File("/Users/fedormurashko/Desktop/image.png");
-//		    ImageIO.write(canny.getBufferedImage(), "png", outputfile);
-//		} catch (IOException e1) {
-//		    e1.printStackTrace();
-//		}
-		//IplImage cerners = detectCorners(canny);
-		//testFrame.showImage(countors);
-		BufferedImage result = countors.getBufferedImage();
-		
-		//cvReleaseImage(canny);
-		cvReleaseImage(countors);
+	public BufferedImage get_contour (){
+		IplImage contours = findCountors(rgb_plane);
+		BufferedImage result = contours.getBufferedImage();
+		cvReleaseImage(contours);
 		return result;
 	}
 	
@@ -175,19 +160,7 @@ public class ImageHandler {
 		
 	public IplImage findCountors( IplImage image ){
 		
-//		    IplImage grayImage    = IplImage.create(grabbedImg.width(), grabbedImg.height(), IPL_DEPTH_8U, 1);
-//		    cvCvtColor(grabbedImg, grayImage, CV_RGB2GRAY);
-	    
-	    
-//		    IplImage grayImage    = IplImage.create(image.width(), image.height(), IPL_DEPTH_8U, 1);
-//		    cvCvtColor(image, grayImage, CV_RGB2GRAY);
-	    
-	    
-//		    cvThreshold(grayImage, grayImage, 127, 255, CV_THRESH_BINARY);
-		
 		CvSeq contours = new CvSeq();
-	    //CvMemStorage memory = CvMemStorage.create();
-	    
 		int contCount = cvFindContours(
 			image,							// - исходное 8-битное одноканальное изображение 
 											//   (ненулевые пиксели обрабатываются как 1, а нулевые — 0)
@@ -197,7 +170,7 @@ public class ImageHandler {
 			contours,						// - указатель, который будет указывать на первый элемент последовательности,
 											//   содержащей данные найденных контуров
 			Loader.sizeof(CvContour.class),	//   размер заголовка элемента последовательности
-			1,								// - режим поиска
+			0,								// - режим поиска
 											//   CV_RETR_EXTERNAL 0 // найти только крайние внешние контуры
 											//   CV_RETR_LIST     1 // найти все контуры и разместить их списком
 											//   CV_RETR_CCOMP    2 // найти все контуры и разместить их в виде 2-уровневой иерархии
@@ -210,106 +183,58 @@ public class ImageHandler {
 											//   CV_CHAIN_APPROX_TC89_KCOS 	4 // аппроксимации Teh-Chin
 											//	 CV_LINK_RUNS				5 // алгоритм только для CV_RETR_LIST
 		);
-		
 
+		IplImage result = fillingImage(getEmptyImage(image.width(), image.height()), 255, 255, 255);;
+		
+		cvDrawContours( 			// — нарисовать заданные контуры
+				result,				// — изображение на котором будут нарисованы контуры
+				contours,		    // — указатель на первый контур
+				CV_RGB(255, 0, 0),	// — цвет внешних контуров
+				CV_RGB(255,0,0),	// — цвет внутренних контуров(отверстие)
+				1,					// - максимальный уровень для отображения контуров:
+									//   0 — только данный контур,
+									//   1 — данный и все следующие на данном уровне, 
+									//   2 — все следующие контуры и все контуры на следующем уровне и т.д. ) 
+									//   Если величина отрицательная, то будут нарисованы контуры на предыдущем уровне перед contour.
+				2,					// - толщина линии для отображения контуров 
+									//   Если величина отрицательная, то область заливается выбранным цветом 
+				8					//  — тип линии
+			);
+				
+				
+		
 //		IplImage result = getEmptyImage(image.width(), image.height());
 //		
-//		for (int i = 0; i < contCount; i++) {
-//			contours.h_next();
-//			
-//		}
-		
-//		
 //		CvSeq current = new CvSeq();
-//		CvSeq biggestCount = new CvSeq();
-//		double maxArea = 0;
-//		
+//
 //		if(contours != null && !contours.isNull()) {
-//			
+//	
 //            for (current = contours; current != null; current = current.h_next()) { 
-//	            	double area = cvContourArea(current);
-//	            	if (area > maxArea ) {
-//	            		biggestCount = current;
-//	            		maxArea = area;
-//	            	}
-//            }    
-//		}
 //		
-//		if (biggestCount != null && !biggestCount.isNull()) {
-//			cvDrawContours( 			// — нарисовать заданные контуры
-//					result,				// — изображение на котором будут нарисованы контуры
-//					biggestCount,		// — указатель на первый контур
-//					CV_RGB(0,0,255),	// — цвет внешних контуров
-//					CV_RGB(255,0,0),	// — цвет внутренних контуров(отверстие)
-//					2,					// - максимальный уровень для отображения контуров:
-//										//   0 — только данный контур,
-//										//   1 — данный и все следующие на данном уровне, 
-//										//   2 — все следующие контуры и все контуры на следующем уровне и т.д. ) 
-//										//   Если величина отрицательная, то будут нарисованы контуры на предыдущем уровне перед contour.
-//					2,					// - толщина линии для отображения контуров 
-//										//   Если величина отрицательная, то область заливается выбранным цветом 
-//					8					//  — тип линии
-//			);
-		
-//			for (current = biggestCount; current != null; current = current.h_next()) { 
-//				cvDrawContours( 			// — нарисовать заданные контуры
-//						result,				// — изображение на котором будут нарисованы контуры
-//						current,			// — указатель на первый контур
-//						CV_RGB(255,0,255),	// — цвет внешних контуров
-//						CV_RGB(255,255,0),	// — цвет внутренних контуров(отверстие)
-//						2,					// - максимальный уровень для отображения контуров:
-//											//   0 — только данный контур,
-//											//   1 — данный и все следующие на данном уровне, 
-//											//   2 — все следующие контуры и все контуры на следующем уровне и т.д. ) 
-//											//   Если величина отрицательная, то будут нарисованы контуры на предыдущем уровне перед contour.
-//						2,					// - толщина линии для отображения контуров 
-//											//   Если величина отрицательная, то область заливается выбранным цветом 
-//						8					//  — тип линии
-//				);
-//			}    
-//		}
-		
-		
-//-------------------------------------------------------------------
-
-		IplImage result = getEmptyImage(image.width(), image.height());
-		
-//		for (int i = 0; i < contCount; i++) {
-//			contours.h_next();
-//			
-//		}
-		
 //		
-		CvSeq current = new CvSeq();
-
-		if(contours != null && !contours.isNull()) {
-	
-            for (current = contours; current != null; current = current.h_next()) { 
-		
-		
-                Random rand = new Random();;
-                int min = 0;
-                int max = 255;
-                int rand1 = rand.nextInt((max - min) + 1) + min;
-                int rand2 = rand.nextInt((max - min) + 1) + min;
-                int rand3 = rand.nextInt((max - min) + 1) + min;
-                
-                cvDrawContours( 			// — нарисовать заданные контуры
-    					result,				// — изображение на котором будут нарисованы контуры
-    					current,		    // — указатель на первый контур
-    					CV_RGB(rand1,rand2,rand3),	// — цвет внешних контуров
-    					CV_RGB(255,0,0),	// — цвет внутренних контуров(отверстие)
-    					1,					// - максимальный уровень для отображения контуров:
-    										//   0 — только данный контур,
-    										//   1 — данный и все следующие на данном уровне, 
-    										//   2 — все следующие контуры и все контуры на следующем уровне и т.д. ) 
-    										//   Если величина отрицательная, то будут нарисованы контуры на предыдущем уровне перед contour.
-    					2,					// - толщина линии для отображения контуров 
-    										//   Если величина отрицательная, то область заливается выбранным цветом 
-    					8					//  — тип линии
-    				);
-            }
-        }    
+//                Random rand = new Random();;
+//                int min = 0;
+//                int max = 255;
+//                int rand1 = rand.nextInt((max - min) + 1) + min;
+//                int rand2 = rand.nextInt((max - min) + 1) + min;
+//                int rand3 = rand.nextInt((max - min) + 1) + min;
+//                
+//                cvDrawContours( 			// — нарисовать заданные контуры
+//    					result,				// — изображение на котором будут нарисованы контуры
+//    					current,		    // — указатель на первый контур
+//    					CV_RGB(rand1,rand2,rand3),	// — цвет внешних контуров
+//    					CV_RGB(255,0,0),	// — цвет внутренних контуров(отверстие)
+//    					1,					// - максимальный уровень для отображения контуров:
+//    										//   0 — только данный контур,
+//    										//   1 — данный и все следующие на данном уровне, 
+//    										//   2 — все следующие контуры и все контуры на следующем уровне и т.д. ) 
+//    										//   Если величина отрицательная, то будут нарисованы контуры на предыдущем уровне перед contour.
+//    					2,					// - толщина линии для отображения контуров 
+//    										//   Если величина отрицательная, то область заливается выбранным цветом 
+//    					8					//  — тип линии
+//    				);
+//            }
+//        }    
 
 //			if (biggestCount != null && !biggestCount.isNull()) {
 //				cvDrawContours( 			// — нарисовать заданные контуры
@@ -328,7 +253,7 @@ public class ImageHandler {
 //					);
 //			}
 
-		cvReleaseImage(image);
+//		cvReleaseImage(image);
 	    return result;
 	}
 }

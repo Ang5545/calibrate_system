@@ -22,20 +22,22 @@ public class MainFrame extends JFrame{
 	
 	private static final String FRAME_NAME = "Scanning system";
 	
-	private static final int WINDOW_WIDTH = 800;
-	private static final int WINDOW_HEIGHT = 530;
+	private static final int WINDOW_WIDTH = 1000;
+	private static final int WINDOW_HEIGHT = 400;
 	
 	private static final int IMG_PAN_WIDTH  = 200;
 	private static final int IMG_PAN_HEIGHT = 150;
-	private static final int IMG_PAN_WITH_SLIDER_HEIGHT = 250;
+	private static final int IMG_PAN_WITH_SLIDER_HEIGHT = 240;
 	
 	private AnswerWorker aw;
-	//private Grabber grabber;
-	private ImageLoaderForTest grabber;
+	private Grabber grabber;
+	//private ImageLoaderForTest grabber;
 	private DeviceManager dm;
 	private ImageHandler ih;
 	
-	private CalibPanel calPan;
+	//private CalibPanel calPan;
+	private MainPanel mainPan;
+	
 	
 	private ImagePanel origImg;
 	private ImagePanel sumChanImg;
@@ -86,10 +88,12 @@ public class MainFrame extends JFrame{
 	}
 
 	private JPanel createCalibPanel(){
-		calPan = new CalibPanel();
-		calPan.addStartAction(new StartGrub());
-		calPan.addStoptAction(new StopGrub());
-		return calPan;
+//		calPan = new CalibPanel();
+//		calPan.addStartAction(new StartGrub());
+//		calPan.addStoptAction(new StopGrub());
+		this.mainPan = new MainPanel(400, 400, "Calib panel");
+		
+		return mainPan;
 	}
 	
 	private JPanel createСhannellsPanel(){
@@ -106,8 +110,8 @@ public class MainFrame extends JFrame{
 	
 	private class StartGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			grabber = new ImageLoaderForTest();
-			//grabber = new Grabber(dm.getCamIndex());
+			//grabber = new ImageLoaderForTest();
+			grabber = new Grabber(dm.getCamIndex());
 			aw = new AnswerWorker();
 			aw.execute();
 		}
@@ -158,7 +162,7 @@ public class MainFrame extends JFrame{
 				blue_channelsPan.setImage(blueImage);
 				
 				sumChanImg.setImage(ih.get_rgb_plane());
-				countImg.setImage(ih.get_Canny_rgb(calPan.maxTh, calPan.minTh ));
+				countImg.setImage(ih.get_contour());
 
 			}
 			return "succes";
