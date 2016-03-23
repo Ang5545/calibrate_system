@@ -88,11 +88,9 @@ public class MainFrame extends JFrame{
 	}
 
 	private JPanel createCalibPanel(){
-//		calPan = new CalibPanel();
-//		calPan.addStartAction(new StartGrub());
-//		calPan.addStoptAction(new StopGrub());
 		this.mainPan = new MainPanel(400, 400, "Calib panel");
-		
+		mainPan.addStartAction(new StartGrub());
+		mainPan.addStoptAction(new StopGrub());
 		return mainPan;
 	}
 	
@@ -135,11 +133,11 @@ public class MainFrame extends JFrame{
 			
 			while(doIt) {
 				
-				try {
-				    Thread.sleep(1000);                 //1000 milliseconds is one second.
-				} catch(InterruptedException ex) {
-				    Thread.currentThread().interrupt();
-				}
+//				try {
+//				    Thread.sleep(1000);                 //1000 milliseconds is one second.
+//				} catch(InterruptedException ex) {
+//				    Thread.currentThread().interrupt();
+//				}
 				
 				int redMinTh 	= red_channelsPan.minTh;
 				int redMaxTh 	= red_channelsPan.maxTh;
@@ -163,7 +161,8 @@ public class MainFrame extends JFrame{
 				
 				sumChanImg.setImage(ih.get_rgb_plane());
 				countImg.setImage(ih.get_contour());
-
+				mainPan.setImage(ih.get_contour());
+				
 			}
 			return "succes";
 		}

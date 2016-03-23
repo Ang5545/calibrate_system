@@ -7,21 +7,23 @@ import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_core.cvAnd;
 import static org.bytedeco.javacpp.opencv_core.cvCloneImage;
 import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
+import static org.bytedeco.javacpp.opencv_core.cvGet2D;
 import static org.bytedeco.javacpp.opencv_core.cvGetSize;
 import static org.bytedeco.javacpp.opencv_core.cvInRangeS;
 import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
 import static org.bytedeco.javacpp.opencv_core.cvScalar;
 import static org.bytedeco.javacpp.opencv_core.cvSet;
+import static org.bytedeco.javacpp.opencv_core.cvSet2D;
 import static org.bytedeco.javacpp.opencv_core.cvSize;
 import static org.bytedeco.javacpp.opencv_core.cvSplit;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_CHAIN_APPROX_NONE;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_RETR_EXTERNAL;
-import static org.bytedeco.javacpp.opencv_imgproc.cvCanny;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -95,8 +97,26 @@ public class ImageHandler {
 	
 	public BufferedImage get_rgb_plane (){
 		rgb_plane = fillingImage( rgb_plane, 0, 0, 0 );
-		cvAnd(r_plane, g_plane, rgb_plane);
-		cvAnd(rgb_plane, b_plane, rgb_plane);
+		
+		ByteBuffer r_img = r_plane.getByteBuffer();
+		ByteBuffer g_img = g_plane.getByteBuffer();
+		ByteBuffer b_img = b_plane.getByteBuffer();
+
+		for(int y = 0; y < rgb_plane.height(); y++) {
+		    for(int x = 0; x < rgb_plane.width(); x++) {
+		        int index = y * rgb_plane.widthStep() + x * rgb_plane.nChannels();
+		        int r_val = r_img.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
+		        int g_val = g_img.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
+		        int b_val = b_img.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
+		        
+		        //if ( (r_val > 0 && g_val > 0) || (g_val > 0 && b_val > 0) ) {
+		        if (r_val > 0 || g_val > 0 || b_val > 0) {
+		        	CvScalar white = CV_RGB(255, 255, 255);
+		        	cvSet2D(rgb_plane, y, x, white );
+		        }
+		        
+		    }
+		}
 		return rgb_plane.getBufferedImage();
 	}
 	
@@ -170,7 +190,7 @@ public class ImageHandler {
 			contours,						// - указатель, который будет указывать на первый элемент последовательности,
 											//   содержащей данные найденных контуров
 			Loader.sizeof(CvContour.class),	//   размер заголовка элемента последовательности
-			0,								// - режим поиска
+			1,								// - режим поиска
 											//   CV_RETR_EXTERNAL 0 // найти только крайние внешние контуры
 											//   CV_RETR_LIST     1 // найти все контуры и разместить их списком
 											//   CV_RETR_CCOMP    2 // найти все контуры и разместить их в виде 2-уровневой иерархии
@@ -186,22 +206,42 @@ public class ImageHandler {
 
 		IplImage result = fillingImage(getEmptyImage(image.width(), image.height()), 255, 255, 255);;
 		
-		cvDrawContours( 			// — нарисовать заданные контуры
-				result,				// — изображение на котором будут нарисованы контуры
-				contours,		    // — указатель на первый контур
-				CV_RGB(255, 0, 0),	// — цвет внешних контуров
-				CV_RGB(255,0,0),	// — цвет внутренних контуров(отверстие)
-				1,					// - максимальный уровень для отображения контуров:
-									//   0 — только данный контур,
-									//   1 — данный и все следующие на данном уровне, 
-									//   2 — все следующие контуры и все контуры на следующем уровне и т.д. ) 
-									//   Если величина отрицательная, то будут нарисованы контуры на предыдущем уровне перед contour.
-				2,					// - толщина линии для отображения контуров 
-									//   Если величина отрицательная, то область заливается выбранным цветом 
-				8					//  — тип линии
-			);
+
+		CvSeq outerCount = new CvSeq();
+		double maxArea = 0;
+
+		if (contours != null && !contours.isNull()) {
+			for(CvSeq cont = contours; cont != null; cont = cont.h_next()) {
+				double area = cvContourArea(cont);
+				if (area > maxArea) {
+					outerCount = cont;
+					maxArea = area;
+				}
+	            
+			}
+		}
+		
+		cvDrawContours(result, outerCount, CV_RGB(255,0,0), CV_RGB(0,255,0), 0, 1, 8); // рисуем контур
+
+		//cvDrawContours(result, innerCount, CV_RGB(255,0,0), CV_RGB(0,255,0), 0, 1, 8); // рисуем контур
+		
+		
+//		cvDrawContours( 			// — нарисовать заданные контуры
+//				result,				// — изображение на котором будут нарисованы контуры
+//				contours,		    // — указатель на первый контур
+//				CV_RGB(255, 0,   0),// — цвет внешних контуров
+//				CV_RGB(0,   255, 0),// — цвет внутренних контуров(отверстие)
+//				2,					// - максимальный уровень для отображения контуров:
+//									//   0 — только данный контур,
+//									//   1 — данный и все следующие на данном уровне, 
+//									//   2 — все следующие контуры и все контуры на следующем уровне и т.д. ) 
+//									//   Если величина отрицательная, то будут нарисованы контуры на предыдущем уровне перед contour.
+//				2,					// - толщина линии для отображения контуров 
+//									//   Если величина отрицательная, то область заливается выбранным цветом 
+//				8					//  — тип линии
+//			);
 				
-				
+			
 		
 //		IplImage result = getEmptyImage(image.width(), image.height());
 //		

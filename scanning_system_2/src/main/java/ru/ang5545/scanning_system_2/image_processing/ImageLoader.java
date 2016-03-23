@@ -15,9 +15,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSize;
+
+
+import javax.swing.JFrame;
+import org.bytedeco.javacpp.*;
+import org.bytedeco.javacv.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 
 public class ImageLoader {
@@ -57,38 +62,45 @@ public class ImageLoader {
 			i = 1;
 	}
 	
+	public static BufferedImage IplImageToBufferedImage(IplImage src) {
+	    OpenCVFrameConverter.ToIplImage grabberConverter = new OpenCVFrameConverter.ToIplImage();
+	    Java2DFrameConverter paintConverter = new Java2DFrameConverter();
+	    Frame frame = grabberConverter.convert(src);
+	    return paintConverter.getBufferedImage(frame,1);
+	}
+	
 	
 	public BufferedImage getImage(){
-		return img.getBufferedImage();
+		return IplImageToBufferedImage(img);
 	}
 	
 	public BufferedImage get_r_plImage (int minTh, int maxTh){
 		r_pl = threshold(r_pl, minTh, maxTh);
-		return r_pl.getBufferedImage();
+		return IplImageToBufferedImage(r_pl);
 	}
 	
 	public BufferedImage get_g_plImage (int minTh, int maxTh){
 		g_pl = threshold(g_pl, minTh, maxTh);
-		return g_pl.getBufferedImage();
+		return IplImageToBufferedImage(g_pl);
 	}
 	
 	public BufferedImage get_b_plImage (int minTh, int maxTh){
 		b_pl = threshold(b_pl, minTh, maxTh);
-		return b_pl.getBufferedImage();
+		return IplImageToBufferedImage(b_pl);
 	}
 	
 	public BufferedImage get_RGB_image (){
 		rgb = fillingImage( rgb, 255, 255, 255 );
 		cvAnd(r_pl, g_pl, rgb);
 		cvAnd(rgb, b_pl, rgb);
-		return rgb.getBufferedImage();
+		return IplImageToBufferedImage(rgb);
 	}
 	
 	public BufferedImage get_Canny_rgb (int min, int max){
 		IplImage canny = canny(rgb, min, max);
 		IplImage countors = findCountors(canny);
 		IplImage cerners = detectCorners(canny);
-		return countors.getBufferedImage();
+		return IplImageToBufferedImage(countors);
 	}
 	
 	public  BufferedImage getEmptyImage(){
@@ -97,7 +109,7 @@ public class ImageLoader {
 	    		8,						//  - глубина (битность на цвет) 
 	    		3						//  - кол-во цветов
 	    );
-	    return fillingImage( img, 255, 255, 255 ).getBufferedImage();
+	    return IplImageToBufferedImage(fillingImage( img, 255, 255, 255 ));
 	}
 	
 	public IplImage fillingImage( IplImage img, int r, int g, int b){

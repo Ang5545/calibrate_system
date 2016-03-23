@@ -37,7 +37,7 @@ public class ImageChannelPanel extends ImagePanel {
 	// ------------------------------------
 	
 	
-	// ---- new size variables
+	// ---- new size variables ----
 	private final static int IMG_WIDTH 	= 185;
 	private final static int IMG_HEIGHT = 110;
 	// ------------------------------------
