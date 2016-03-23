@@ -23,7 +23,7 @@ public class Grabber {
 	public Grabber(int camIndex) {
 		this.camIndex   = camIndex;
 		this.capture 	= opencv_highgui.cvCreateCameraCapture( camIndex );
-		this.grabbedImg = opencv_highgui.cvQueryFrame( capture );
+//		this.grabbedImg = opencv_highgui.cvQueryFrame( capture );
 //		this.grabbedImg = ImageHelper.getEmptyImage(DEF_HEIGHT, DEF_WIDTH );
 	//	testFrame = new CanvasFrame("Test");
 	}
@@ -38,9 +38,10 @@ public class Grabber {
 	}
 	
 	public void stopGrub(){
-		cvReleaseImage(grabbedImg);
+		//cvReleaseImage(grabbedImg);
 		//TODO do release capture
 		opencv_highgui.cvReleaseCapture(capture);
+		//cvReleaseImage(grabbedImg);
 	}
 	
 }

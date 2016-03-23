@@ -18,7 +18,7 @@ public class ImagePanel extends JPanel{
 	private static final int X_OFFSET = 15;
 	private static final int Y_OFFSET = 40;
 	
-	private JLabel label;
+	protected JLabel label;
 	private int imgWidth;
 	private int imgHeight;
 	private int panWidth;
