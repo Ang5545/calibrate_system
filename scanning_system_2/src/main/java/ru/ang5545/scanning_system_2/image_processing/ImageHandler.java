@@ -1,8 +1,9 @@
 package ru.ang5545.scanning_system_2.image_processing;
 
 import static org.bytedeco.javacpp.helper.opencv_core.CV_RGB;
-import static org.bytedeco.javacpp.helper.opencv_core.cvDrawContours;
+//import static org.bytedeco.javacpp.helper.opencv_core.cvDrawContours;
 import static org.bytedeco.javacpp.helper.opencv_imgproc.cvFindContours;
+import static org.bytedeco.javacpp.opencv_core.CV_PI;
 import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_core.cvAnd;
 import static org.bytedeco.javacpp.opencv_core.cvCloneImage;
@@ -36,6 +37,14 @@ import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSeq;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.CanvasFrame;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameConverter;
+
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+
 
 public class ImageHandler {
 	
@@ -44,6 +53,8 @@ public class ImageHandler {
 	private IplImage g_plane;
 	private IplImage b_plane;
 	private IplImage rgb_plane;
+	
+	private IplImage contours;
 	
 	private static final int DEF_HEIGHT = 200;
 	private static final int DEF_WIDTH  = 300;
@@ -70,29 +81,29 @@ public class ImageHandler {
 		
 	} 
 	
-	
+
 	// ///////////////////////////////
 	// //// -- image geters --  /////
 	// //////////////////////////////
 	
 	public BufferedImage getOrigin (){
-		return origin.getBufferedImage();
+		return ImageHelper.getBufferedImage(origin);
 	}
 	
 	
 	public BufferedImage get_r_plane (int minTh, int maxTh){
 		r_plane = threshold(r_plane, minTh, maxTh);
-		return r_plane.getBufferedImage();
+		return ImageHelper.getBufferedImage(r_plane);
 	}
 	
 	public BufferedImage get_g_plane (int minTh, int maxTh){
 		g_plane = threshold(g_plane, minTh, maxTh);
-		return g_plane.getBufferedImage();
+		return ImageHelper.getBufferedImage(g_plane);
 	}
 	
 	public BufferedImage get_b_plane (int minTh, int maxTh){
 		b_plane = threshold(b_plane, minTh, maxTh);
-		return b_plane.getBufferedImage();
+		return ImageHelper.getBufferedImage(b_plane);
 	}
 	
 	public BufferedImage get_rgb_plane (){
@@ -109,15 +120,16 @@ public class ImageHandler {
 		        int g_val = g_img.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
 		        int b_val = b_img.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
 		        
-		        //if ( (r_val > 0 && g_val > 0) || (g_val > 0 && b_val > 0) ) {
-		        if (r_val > 0 || g_val > 0 || b_val > 0) {
+		        if ( (r_val > 0 && g_val > 0) && (g_val > 0 && b_val > 0) ) {
+		        //if (r_val > 0 || g_val > 0 || b_val > 0) {
+		        //if ( r_val > 0 && g_val > 0 && b_val > 0 ) {
 		        	CvScalar white = CV_RGB(255, 255, 255);
 		        	cvSet2D(rgb_plane, y, x, white );
 		        }
 		        
 		    }
 		}
-		return rgb_plane.getBufferedImage();
+		return ImageHelper.getBufferedImage(rgb_plane); 
 	}
 	
 	
@@ -126,11 +138,71 @@ public class ImageHandler {
 	
 	
 	public BufferedImage get_contour (){
-		IplImage contours = findCountors(rgb_plane);
-		BufferedImage result = contours.getBufferedImage();
-		cvReleaseImage(contours);
+		contours = findCountors(rgb_plane);
+		BufferedImage result = ImageHelper.getBufferedImage(contours);
+		//cvReleaseImage(contours);
 		return result;
 	}
+	
+	public BufferedImage getHoughLines () {
+		
+		IplImage result = contours.clone();
+		IplImage grayImage = cvCreateImage( cvGetSize( contours ), IPL_DEPTH_8U, 1 );
+		cvCvtColor(contours, grayImage, CV_RGB2GRAY);
+		
+		
+		//IplImage grayImage = contours.clone();
+		
+		ByteBuffer img = grayImage.getByteBuffer();
+		int y_max_1 = 0;
+		int x_max_1 = 0;
+		
+		int y_max_2 = 0;
+		int x_max_2 = 0;
+		
+		System.out.println("grayImage.height() = " + grayImage.height() );
+		System.out.println("grayImage.width() = " + grayImage.width() );
+		
+		for(int y = 0; y < grayImage.height(); y++) {
+		    for(int x = 0; x < grayImage.width(); x++) {
+		        int index = y * grayImage.widthStep() + x * grayImage.nChannels();
+		        int val = img.get(index);
+		        if (val > 0) {
+		        	if (y > y_max_1) {
+		        		y_max_2 = y_max_1;
+		        		x_max_2 = x_max_1;
+		        		y_max_1 = y;
+		        		x_max_1 = x;
+		        	}
+		        }
+		    }
+		}
+		
+//		cvLine(
+//			grayImage, 
+//			cvPoint(x_max_1, y_max_1),
+//			cvPoint(x_max_2, y_max_2),
+//			cvScalarAll(255)
+//		);
+//
+		cvDrawLine(
+				result, 
+				new CvPoint(1180, 860),
+				new CvPoint(100, 900),
+				CvScalar.GREEN, 
+				3, 
+				-1, 
+				0);
+		
+		System.out.println("y_max_1 = " + y_max_1);
+		System.out.println("x_max_1 = " + x_max_1);
+		
+		System.out.println("y_max_2 = " + y_max_2);
+		System.out.println("x_max_2 = " + x_max_2);
+		
+		return ImageHelper.getBufferedImage(result);
+	}
+	
 	
 	
 	// ////////////////////////////////
@@ -204,8 +276,7 @@ public class ImageHandler {
 											//	 CV_LINK_RUNS				5 // алгоритм только для CV_RETR_LIST
 		);
 
-		IplImage result = fillingImage(getEmptyImage(image.width(), image.height()), 255, 255, 255);;
-		
+	
 
 		CvSeq outerCount = new CvSeq();
 		double maxArea = 0;
@@ -221,9 +292,17 @@ public class ImageHandler {
 			}
 		}
 		
-		cvDrawContours(result, outerCount, CV_RGB(255,0,0), CV_RGB(0,255,0), 0, 1, 8); // рисуем контур
+		IplImage result = fillingImage(getEmptyImage(image.width(), image.height()), 255, 255, 255);
+		cvDrawContours(result, outerCount, CV_RGB(255,0,0), CV_RGB(0,0,255), 0, 4, 8); // рисуем контур
 
-		//cvDrawContours(result, innerCount, CV_RGB(255,0,0), CV_RGB(0,255,0), 0, 1, 8); // рисуем контур
+
+		  
+		//cvThreshold(result, grayImage, 150, 255, CV_THRESH_BINARY_INV);
+		 
+		 
+	//	IplImage outPut = cvCreateImage( cvGetSize( result ), IPL_DEPTH_8U, 1 );
+		
+		//cvDrawContours(result, innerCount, CV_RGB(255,0,0), CV_RGB(0,255,0), 0, 3, 8); // рисуем контур
 		
 		
 //		cvDrawContours( 			// — нарисовать заданные контуры

@@ -12,7 +12,6 @@ import javax.swing.SwingWorker;
 
 import ru.ang5545.scanning_system_2.cam_acces.DeviceManager;
 import ru.ang5545.scanning_system_2.cam_acces.Grabber;
-import ru.ang5545.scanning_system_2.cam_acces.ImageLoaderForTest;
 import ru.ang5545.scanning_system_2.image_processing.ImageHandler;
 
 
@@ -31,11 +30,9 @@ public class MainFrame extends JFrame{
 	
 	private AnswerWorker aw;
 	private Grabber grabber;
-	//private ImageLoaderForTest grabber;
 	private DeviceManager dm;
 	private ImageHandler ih;
 	
-	//private CalibPanel calPan;
 	private MainPanel mainPan;
 	
 	
@@ -108,7 +105,6 @@ public class MainFrame extends JFrame{
 	
 	private class StartGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			//grabber = new ImageLoaderForTest();
 			grabber = new Grabber(dm.getCamIndex());
 			aw = new AnswerWorker();
 			aw.execute();
@@ -146,8 +142,7 @@ public class MainFrame extends JFrame{
 				int blueMinTh 	= blue_channelsPan.minTh;
 				int blueMaxTh 	= blue_channelsPan.maxTh;
 
-				grabber.snapShoot();
-				ih.processImage(grabber.getGrabedImage());
+				ih.processImage(grabber.grab());
 
 				BufferedImage image			= ih.getOrigin();
 				BufferedImage redImage 		= ih.get_r_plane(redMinTh, redMaxTh);
@@ -161,7 +156,7 @@ public class MainFrame extends JFrame{
 				
 				sumChanImg.setImage(ih.get_rgb_plane());
 				countImg.setImage(ih.get_contour());
-				mainPan.setImage(ih.get_contour());
+				mainPan.setImage(ih.getHoughLines());
 				
 			}
 			return "succes";

@@ -1,6 +1,6 @@
 package ru.ang5545.scanning_system_2.cam_acces;
 
-import org.bytedeco.javacpp.opencv_highgui.CvCapture;
+//import org.bytedeco.javacpp.opencv_highgui.CvCapture;
 import org.bytedeco.javacpp.videoInputLib.videoInput;
 
 

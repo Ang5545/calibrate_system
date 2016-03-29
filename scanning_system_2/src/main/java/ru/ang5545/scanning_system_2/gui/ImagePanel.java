@@ -36,7 +36,7 @@ public class ImagePanel extends JPanel{
 		this.label 		= createLabel();
 		this.add(label);
 		this.setDimension(panWidth, panHeight);
-		this.setImage( ImageHelper.getEmptyImage(imgWidth, imgHeight) );
+		this.setImage(  ImageHelper.getEmptyImage(imgWidth, imgHeight) );
 	}
 	
 	public ImagePanel(int panWidth, int panHeight, int imgWidth, int imgHeight){
