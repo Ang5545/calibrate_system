@@ -13,6 +13,7 @@ import javax.swing.SwingWorker;
 import ru.ang5545.scanning_system_2.cam_acces.DeviceManager;
 import ru.ang5545.scanning_system_2.cam_acces.Grabber;
 import ru.ang5545.scanning_system_2.image_processing.ImageHandler;
+import ru.ang5545.scanning_system_2.image_processing.ImageLoader;
 
 
 
@@ -29,7 +30,9 @@ public class MainFrame extends JFrame{
 	private static final int IMG_PAN_WITH_SLIDER_HEIGHT = 240;
 	
 	private AnswerWorker aw;
-	private Grabber grabber;
+	//private Grabber grabber;
+	private ImageLoader grabber;
+	
 	private DeviceManager dm;
 	private ImageHandler ih;
 	
@@ -65,7 +68,7 @@ public class MainFrame extends JFrame{
 		
 		// - create default components - 
 		this.dm = new DeviceManager();
-		this.ih = new ImageHandler();
+		this.ih = new ImageHandler(dm.getResolutuon());
 	}
 
 	public void showFrame() {
@@ -105,7 +108,8 @@ public class MainFrame extends JFrame{
 	
 	private class StartGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			grabber = new Grabber(dm.getCamIndex());
+			//grabber = new Grabber(dm.getCamIndex());
+			grabber = new ImageLoader();
 			aw = new AnswerWorker();
 			aw.execute();
 		}
@@ -129,12 +133,6 @@ public class MainFrame extends JFrame{
 			
 			while(doIt) {
 				
-//				try {
-//				    Thread.sleep(1000);                 //1000 milliseconds is one second.
-//				} catch(InterruptedException ex) {
-//				    Thread.currentThread().interrupt();
-//				}
-				
 				int redMinTh 	= red_channelsPan.minTh;
 				int redMaxTh 	= red_channelsPan.maxTh;
 				int greenMinTh 	= green_channelsPan.minTh;
@@ -142,21 +140,25 @@ public class MainFrame extends JFrame{
 				int blueMinTh 	= blue_channelsPan.minTh;
 				int blueMaxTh 	= blue_channelsPan.maxTh;
 
+				ih.setRedThresholdParameters(redMinTh, redMaxTh);
+				ih.setGreenThresholdParameters(greenMinTh, greenMaxTh);
+				ih.setBlueThresholdParameters(blueMinTh, blueMaxTh);
+				
 				ih.processImage(grabber.grab());
-
-				BufferedImage image			= ih.getOrigin();
-				BufferedImage redImage 		= ih.get_r_plane(redMinTh, redMaxTh);
-				BufferedImage greenImage 	= ih.get_g_plane(greenMinTh, greenMaxTh);
-				BufferedImage blueImage 	= ih.get_b_plane(blueMinTh, blueMaxTh);
+//
+//				BufferedImage image			= ih.getOrigin();
+//				BufferedImage redImage 		= ih.get_r_plane(redMinTh, redMaxTh);
+//				BufferedImage greenImage 	= ih.get_g_plane(greenMinTh, greenMaxTh);
+//				BufferedImage blueImage 	= ih.get_b_plane(blueMinTh, blueMaxTh);
+//				
+				origImg.setImage(ih.getOrigin());
+				red_channelsPan.setImage(ih.getRedChannel());
+				green_channelsPan.setImage(ih.getGreenChannel());
+				blue_channelsPan.setImage(ih.getBlueChannel());
 				
-				origImg.setImage(image);
-				red_channelsPan.setImage(redImage);
-				green_channelsPan.setImage(greenImage);
-				blue_channelsPan.setImage(blueImage);
-				
-				sumChanImg.setImage(ih.get_rgb_plane());
+				sumChanImg.setImage(ih.getRGBsumm());
 				countImg.setImage(ih.get_contour());
-				mainPan.setImage(ih.getHoughLines());
+				mainPan.setImage(ih.getResultl());
 				
 			}
 			return "succes";
