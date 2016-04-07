@@ -57,9 +57,9 @@ public class ImageHandler {
 	private int blueMinTh;
 	private int blueMaxTh;
 	
-//	// -- for test --
-//	private CanvasFrame source_1;
-//	private CanvasFrame source_2; 
+	// -- for test --
+//	private IplImage testImg;
+//	private CanvasFrame testSource;
 //	private OpenCVFrameConverter.ToIplImage sourceConverter;
 	
 	
@@ -74,10 +74,11 @@ public class ImageHandler {
 		this.innerContour = new CvSeq();
 		this.outerContour = new CvSeq();
 		
-//		//test 
-//		source_1 = new CanvasFrame("test_1");
-//		source_2 = new CanvasFrame("test_2");
-//		sourceConverter = new OpenCVFrameConverter.ToIplImage();
+		//test
+//		this.testImg	= cvCreateImage( resolution, IPL_DEPTH_8U, 3 );
+//		this.testSource = new CanvasFrame("test");
+//		this.sourceConverter = new OpenCVFrameConverter.ToIplImage();
+//		this.testSource.setSize(320*2, 240*2);
 	}
 
 	public void processImage(IplImage img) {
@@ -99,8 +100,31 @@ public class ImageHandler {
 		drawContour(result, innerContour, CvScalar.GREEN, 5);
 		drawContour(result, outerContour, CvScalar.GREEN, 5);
 		
-		
 		drawPoints(result, innerContour, outerContour);
+		
+//		if (innerContour.total() > 0 && outerContour.total() > 0) {
+//			CvPoint[] innerPoints = getPoints(innerContour);
+//			CvPoint[] outerPoints = getPoints(outerContour);
+//		}
+//		
+//		
+//		cvDrawContours(testImg, innerContour, CV_RGB(255,0,0), CV_RGB(0,0,255), 0, 4, 8); // рисуем контур
+//		cvDrawContours(testImg, outerContour, CV_RGB(0,255,0), CV_RGB(0,255,255), 0, 4, 8); // рисуем контур
+//		
+//		System.out.println("innerContour.total = " + innerContour.total());
+//		System.out.println("outerContour.total = " + outerContour.total());
+//		
+//		
+//		
+//		testSource.showImage(sourceConverter.convert(testImg));
+//		testSource.setSize(320*2, 240*2);
+//		
+////		CvPoint[] innerPoints = getPoints(innerContour);
+////		CvPoint[] outerPoints = getPoints(outerContour);
+//		
+//		
+//		
+//		//drawPoints(result, innerContour, outerContour);
 		
 	} 
 
@@ -168,24 +192,40 @@ public class ImageHandler {
 				 8 					// — тип линии
 		);
 	}
-		
+	
+	
+	public void drawCircle(IplImage src, CvPoint center, CvScalar color, int radius) {
+		 cvDrawCircle(				// — нарисовать круг
+				 src, 				// — изображение на котором будет нарисован круг
+				 center, 			// - центр круга
+				 radius, 			// - радиус круга
+				 color, 			// - цвет
+				 -1, 				// - толщина (елси значение отрицательное круг заливается выбранным цветом)
+				 10, 				// - тип линии
+				 0					// - Количество дробных битов в координатах центра и в значении радиуса.
+		);
+	}
+	
 	public void drawPoints(IplImage src, CvSeq innerContour, CvSeq outerContour) {
-		CvPoint[] innerPoints = getPoints(innerContour);
-		CvPoint[] outerPoints = getPoints(outerContour);	
+		if (innerContour.total() > 0 && outerContour.total() > 0) {
 		
-		for (int i = 0; i < 4; i++) {
-			CvPoint inP = innerPoints[i];
-			CvPoint outP = outerPoints[i];
-			cvDrawCircle(src, inP, 5, CvScalar.WHITE, -1, 8, 0);
-			cvDrawCircle(src, outP, 5, CvScalar.WHITE, -1, 8, 0);
-			cvLine(src, inP, outP, CvScalar.RED, 3, CV_AA, 0);	
+			CvPoint[] innerPoints = getPoints(innerContour);			
+			CvPoint[] outerPoints = getPoints(outerContour);	
+			
+			for (int i = 0; i < 4; i++) {
+				CvPoint inP = innerPoints[i];
+				CvPoint outP = outerPoints[i];
+				cvDrawCircle(src, inP, 5, CvScalar.WHITE, -1, 8, 0);
+				cvDrawCircle(src, outP, 5, CvScalar.WHITE, -1, 8, 0);
+				cvLine(src, inP, outP, CvScalar.RED, 3, CV_AA, 0);	
+			}
+			
+			CvPoint[] middlePoints = getMiddlePoints(outerPoints, innerPoints);
+
+			for (int i = 0; i < 4; i++) {
+				drawCircle(src, middlePoints[i], CvScalar.WHITE, 20);
+			}
 		}
-		
-//		CvPoint[] middlePoints = getMiddlePoints(outerPoints, innerPoints);
-//
-//		for (int i = 0; i < 4; i++) {
-//			cvDrawCircle(src, middlePoints[i], 5, CvScalar.WHITE, -1, 10, 0);
-//		}	
 	}
 
 	public void sumChannels(IplImage img, IplImage r_channel, IplImage g_channel, IplImage b_channel) {	
@@ -281,8 +321,13 @@ public class ImageHandler {
 //	    return resImg;
 //	}
 	
-	public static CvPoint[] getPoints(CvSeq contour) {
+	public CvPoint[] getPoints(CvSeq contour) {
 		CvMemStorage storage = null ;
+		
+//		cvDrawContours(testImg, innerContour, CV_RGB(255,0,0), CV_RGB(0,0,255), 0, 4, 8); // рисуем контур
+//		testSource.showImage(sourceConverter.convert(testImg));
+//		testSource.setSize(320*2, 240*2);
+		
 		CvSeq poly = cvApproxPoly(						// - ппроксимация контура(кривой) полигонами
 				contour, 								// - исходная последовательность или массив точек
 				Loader.sizeof(CvContour.class),			// - размер заголовка кривой(контура)
@@ -297,19 +342,17 @@ public class ImageHandler {
 														//   Если массив точек , то параметр определяет закрывается ли кривая
 														//   (parameter2!=0) или нет (parameter2=0).
 		);
-		System.out.println(poly.total());
-		
-		return null;
-//		if (poly.total() == 4) {
-//			CvPoint[] points = new CvPoint[4];
-//			for (int i = 0; i < 4; i++){
-//				CvPoint point = new CvPoint(cvGetSeqElem(poly, i));
-//				points[i] = (point);
-//			}
-//			return sortPoints(points);
-//		} else {
-//			return null;
-//		}
+
+		if (poly.total() == 4) {
+			CvPoint[] points = new CvPoint[4];
+			for (int i = 0; i < 4; i++){
+				CvPoint point = new CvPoint(cvGetSeqElem(poly, i));
+				points[i] = (point);
+			}
+			return sortPoints(points);
+		} else {
+			return null;
+		}
 	}
 	
 	public static CvPoint[] sortPoints(CvPoint[] points) {
