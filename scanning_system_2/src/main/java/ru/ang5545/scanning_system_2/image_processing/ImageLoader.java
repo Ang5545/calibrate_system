@@ -10,6 +10,8 @@ import java.awt.Graphics2D;
 import java.awt.List;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,19 +24,29 @@ import org.bytedeco.javacpp.opencv_core.CvSize;
 import javax.swing.JFrame;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
+
+
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 
 public class ImageLoader {
 
-	private static final String DIR_PATH 	= "/home/fedor-m/Java/git/scanning_system_2/scanning_system_2/testImages/";
+	private static final String IMAGES_DIR 	= "/testImages/";
 	private static final String IMG_FORMAT 	= ".png";
 	private int i;
 	
+	private String dirPath;
 	private IplImage img;
 
 	public ImageLoader(){
-		this.i	 	= 1;
+		try {
+			this.dirPath =  new File(".").getCanonicalPath() + IMAGES_DIR;
+			System.out.println(dirPath);
+		} catch (IOException e) {
+			System.out.println("directory not found");
+			e.printStackTrace();
+		}
+		this.i = 1;
 	}
 	
 	private void sleep(int milliseconds) {
@@ -48,7 +60,7 @@ public class ImageLoader {
 	
 	public IplImage grab() {
 		sleep(1000);
-		String path = DIR_PATH + "image" + i + IMG_FORMAT;
+		String path = dirPath + "image" + i + IMG_FORMAT;
 		this.img	= cvLoadImage(path, 3);
 		this.i = i < 5 ? i + 1 :  1;
 		return img;

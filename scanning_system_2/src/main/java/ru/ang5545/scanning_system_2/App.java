@@ -5,6 +5,7 @@ import ru.ang5545.scanning_system_2.gui.MainFrame;
 public class App {
 
 	public static void createGUI() {
+		
 		MainFrame fr = new MainFrame();	
 		fr.showFrame();
    }
