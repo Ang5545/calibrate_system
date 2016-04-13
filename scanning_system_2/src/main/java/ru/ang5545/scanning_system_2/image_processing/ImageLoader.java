@@ -33,10 +33,8 @@ public class ImageLoader {
 	
 	private IplImage img;
 
-
 	public ImageLoader(){
 		this.i	 	= 1;
-		//this.img	= cvLoadImage(DIR_PATH + "image1" + IMG_FORMAT, 3);
 	}
 	
 	private void sleep(int milliseconds) {
@@ -56,6 +54,10 @@ public class ImageLoader {
 		return img;
 	}
 
+	public IplImage getImg() {
+		return img;
+	}
+	
 	public void stopGrub() {
 		
 	}
