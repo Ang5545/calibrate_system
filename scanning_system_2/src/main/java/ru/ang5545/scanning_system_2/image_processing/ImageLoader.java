@@ -41,7 +41,6 @@ public class ImageLoader {
 	public ImageLoader(){
 		try {
 			this.dirPath =  new File(".").getCanonicalPath() + IMAGES_DIR;
-			System.out.println(dirPath);
 		} catch (IOException e) {
 			System.out.println("directory not found");
 			e.printStackTrace();
