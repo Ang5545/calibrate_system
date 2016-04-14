@@ -26,8 +26,7 @@ import org.bytedeco.javacv.OpenCVFrameConverter;
 
 public class ImageHelper {
 
-	
-	
+
 	public static BufferedImage getBufferedImage(IplImage src) {
 	    OpenCVFrameConverter.ToIplImage grabberConverter = new OpenCVFrameConverter.ToIplImage();
 	    Java2DFrameConverter paintConverter = new Java2DFrameConverter();

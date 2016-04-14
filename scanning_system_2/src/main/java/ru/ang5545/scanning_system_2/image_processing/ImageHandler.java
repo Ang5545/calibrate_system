@@ -17,12 +17,15 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 
 import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.opencv_core;
+import org.bytedeco.javacpp.opencv_core.CvMat;
 import org.bytedeco.javacpp.opencv_highgui;
 import org.bytedeco.javacpp.opencv_core.CvContour;
 import org.bytedeco.javacpp.opencv_core.CvMemStorage;
 import org.bytedeco.javacpp.opencv_core.CvPoint;
 import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSeq;
+import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Frame;
@@ -57,75 +60,44 @@ public class ImageHandler {
 	private int blueMinTh;
 	private int blueMaxTh;
 	
-	// -- for test --
-//	private IplImage testImg;
-//	private CanvasFrame testSource;
-//	private OpenCVFrameConverter.ToIplImage sourceConverter;
 	
 	
-	public ImageHandler(CvSize resolution) {
-		this.origin		= cvCreateImage( resolution, IPL_DEPTH_8U, 3 );
-		this.contours	= cvCreateImage( resolution, IPL_DEPTH_8U, 3 );
-		this.result		= cvCreateImage( resolution, IPL_DEPTH_8U, 3 );
-		this.r_channel 	= cvCreateImage( resolution, IPL_DEPTH_8U, 1 );
-		this.g_channel 	= cvCreateImage( resolution, IPL_DEPTH_8U, 1 );
-		this.b_channel 	= cvCreateImage( resolution, IPL_DEPTH_8U, 1 );
-		this.rgb_summ 	= cvCreateImage( resolution, IPL_DEPTH_8U, 1 );
+	public ImageHandler() {
 		this.innerContour = new CvSeq();
 		this.outerContour = new CvSeq();
-		
-		//test
-//		this.testImg	= cvCreateImage( resolution, IPL_DEPTH_8U, 3 );
-//		this.testSource = new CanvasFrame("test");
-//		this.sourceConverter = new OpenCVFrameConverter.ToIplImage();
-//		this.testSource.setSize(320*2, 240*2);
 	}
 
 	public void processImage(IplImage img) {
+
+		CvSize size =  new CvSize(img.width(), img.height());
 		this.origin		= cvCloneImage(img);
 		this.result		= cvCloneImage(img);
-		
+		this.r_channel 	= createImage(size, 1);
+		this.g_channel 	= createImage(size, 1);
+		this.b_channel 	= createImage(size, 1);
+		//this.rgb_summ 	= createImage(size, 1);
+		this.contours 	= createImage(size, 3);
+
 		// -- channels handling -- 
 		cvSplit( origin, b_channel, g_channel, r_channel, null );
+		
 		threshold(r_channel, redMinTh, redMaxTh);
 		threshold(g_channel, greenMinTh, greenMaxTh);
 		threshold(b_channel, blueMinTh, blueMaxTh);
+
+		this.rgb_summ = sumChannels(r_channel, g_channel, b_channel);
+
+		// -- contours handling -- 
 		
-		sumChannels(rgb_summ, r_channel, g_channel, b_channel);
 		findContours(rgb_summ); 
 		
-		drawContour(contours, innerContour, CvScalar.BLUE, 6);
-		drawContour(contours, outerContour, CvScalar.WHITE, 6);
-		
-		drawContour(result, innerContour, CvScalar.GREEN, 5);
-		drawContour(result, outerContour, CvScalar.GREEN, 5);
-		
-		drawPoints(result, innerContour, outerContour);
-		
-//		if (innerContour.total() > 0 && outerContour.total() > 0) {
-//			CvPoint[] innerPoints = getPoints(innerContour);
-//			CvPoint[] outerPoints = getPoints(outerContour);
-//		}
-//		
-//		
-//		cvDrawContours(testImg, innerContour, CV_RGB(255,0,0), CV_RGB(0,0,255), 0, 4, 8); // рисуем контур
-//		cvDrawContours(testImg, outerContour, CV_RGB(0,255,0), CV_RGB(0,255,255), 0, 4, 8); // рисуем контур
-//		
-//		System.out.println("innerContour.total = " + innerContour.total());
-//		System.out.println("outerContour.total = " + outerContour.total());
-//		
-//		
-//		
-//		testSource.showImage(sourceConverter.convert(testImg));
-//		testSource.setSize(320*2, 240*2);
-//		
-////		CvPoint[] innerPoints = getPoints(innerContour);
-////		CvPoint[] outerPoints = getPoints(outerContour);
-//		
-//		
-//		
-//		//drawPoints(result, innerContour, outerContour);
-		
+		this.contours = drawContour(contours, innerContour, CvScalar.BLUE, 6);
+		this.contours = drawContour(contours, outerContour, CvScalar.WHITE, 6);
+	
+		this.result = drawContour(result, innerContour, CvScalar.GREEN, 5);
+		this.result = drawContour(result, outerContour, CvScalar.GREEN, 5);
+
+		this.result = drawPoints(result, innerContour, outerContour);		
 	} 
 
 	public void setRedThresholdParameters(int minTh, int maxTh) {
@@ -176,8 +148,9 @@ public class ImageHandler {
 		return ImageHelper.getBufferedImage(result);
 	}
 	
-	public void drawContour(IplImage src, CvSeq countour, CvScalar color, int thiknes) {
-		 cvDrawContours( 			// — нарисовать заданные контуры
+	public IplImage drawContour(IplImage src, CvSeq countour, CvScalar color, int thiknes) {
+		//IplImage result = cvCloneImage(src);
+		cvDrawContours( 			// — нарисовать заданные контуры
 				 src, 				// — изображение на котором будут нарисованы контуры
 				 countour, 			// — указатель на первый контур
 				 color,				// — цвет внешних контуров
@@ -191,6 +164,7 @@ public class ImageHandler {
 				 					//   Если величина отрицательная, то область заливается выбранным цветом 
 				 8 					// — тип линии
 		);
+		return src;
 	}
 	
 	
@@ -206,50 +180,53 @@ public class ImageHandler {
 		);
 	}
 	
-	public void drawPoints(IplImage src, CvSeq innerContour, CvSeq outerContour) {
+	public IplImage drawPoints(IplImage src, CvSeq innerContour, CvSeq outerContour) {
 		if (innerContour.total() > 0 && outerContour.total() > 0) {
 		
 			CvPoint[] innerPoints = getPoints(innerContour);			
 			CvPoint[] outerPoints = getPoints(outerContour);	
 			
-			for (int i = 0; i < 4; i++) {
-				CvPoint inP = innerPoints[i];
-				CvPoint outP = outerPoints[i];
-				cvDrawCircle(src, inP, 5, CvScalar.WHITE, -1, 8, 0);
-				cvDrawCircle(src, outP, 5, CvScalar.WHITE, -1, 8, 0);
-				cvLine(src, inP, outP, CvScalar.RED, 3, CV_AA, 0);	
-			}
-			
-			CvPoint[] middlePoints = getMiddlePoints(outerPoints, innerPoints);
-
-			for (int i = 0; i < 4; i++) {
-				drawCircle(src, middlePoints[i], CvScalar.WHITE, 20);
+			if (innerPoints != null && outerPoints != null) {	
+				System.out.println("Test");
+				for (int i = 0; i < 4; i++) {
+					CvPoint inP = innerPoints[i];
+					CvPoint outP = outerPoints[i];
+					cvDrawCircle(src, inP, 5, CvScalar.WHITE, -1, 8, 0);
+					cvDrawCircle(src, outP, 5, CvScalar.WHITE, -1, 8, 0);
+					cvLine(src, inP, outP, CvScalar.RED, 3, CV_AA, 0);	
+				}
+				
+				CvPoint[] middlePoints = getMiddlePoints(outerPoints, innerPoints);
+				for (int i = 0; i < 4; i++) {
+					drawCircle(src, middlePoints[i], CvScalar.WHITE, 20);
+				}
 			}
 		}
+		return src;
 	}
 
-	public void sumChannels(IplImage img, IplImage r_channel, IplImage g_channel, IplImage b_channel) {	
+	public IplImage sumChannels(IplImage r_channel, IplImage g_channel, IplImage b_channel) {	
 		
-		ByteBuffer r_img = r_channel.getByteBuffer();
-		ByteBuffer g_img = g_channel.getByteBuffer();
-		ByteBuffer b_img = b_channel.getByteBuffer();
+		IplImage img = cvCloneImage(r_channel);
+		ByteBuffer bb_red 	= r_channel.createBuffer();
+		ByteBuffer bb_green = g_channel.createBuffer();
+		ByteBuffer bb_blue 	= b_channel.createBuffer();
 
 		for(int y = 0; y < img.height(); y++) {
 		    for(int x = 0; x < img.width(); x++) {
+
 		        int index = y * img.widthStep() + x * img.nChannels();
-		        int r_val = r_img.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
-		        int g_val = g_img.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
-		        int b_val = b_img.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
+		        int r_val = bb_red.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
+		        int g_val = bb_green.get(index) & 0xFF; 
+		        int b_val = bb_blue.get(index) & 0xFF; 
 		        
 		        if ( (r_val > 0 && g_val > 0) || (g_val > 0 && b_val > 0) ||  (r_val > 0 && b_val > 0) ) {
-		        //if (r_val > 0 || g_val > 0 || b_val > 0) {
-		        //if ( r_val > 0 && g_val > 0 && b_val > 0 ) {
-		        	CvScalar white = CV_RGB(255, 255, 255);
-		        	cvSet2D(img, y, x, white );
+		        	cvSet2D(img, y, x, CvScalar.WHITE );	        	
 		        }
 		        
 		    }
 		}
+		return img;
 	}
 	
 
@@ -297,7 +274,7 @@ public class ImageHandler {
 		}
 	}
 	
-	public void threshold( IplImage img, int min, int max){
+	public IplImage threshold( IplImage img, int min, int max){
 		IplImage src = cvCloneImage(img);
 		cvInRangeS( 
 			src, 			// - исходный массив
@@ -306,50 +283,39 @@ public class ImageHandler {
 			img				// - массив для хранения результата (тип 8S или 8U)
 		);
 		cvReleaseImage(src);
+		return img;
 	}
-	
-//	public IplImage canny( IplImage image, int thMin, int thMax ){
-//		IplImage resImg = cvCloneImage(image);
-//		cvCanny( 
-//			image, 	// - одноканальное изображение для обработки (градации серого) 
-//			resImg,	// - одноканальное изображение для хранения границ, найденных функцией
-//			thMin,	// - порог минимума
-//			thMax,	// - порог максимума
-//			3		// - размер для оператора Собеля 
-//		);
-//		cvReleaseImage(image);
-//	    return resImg;
-//	}
+
 	
 	public CvPoint[] getPoints(CvSeq contour) {
-		CvMemStorage storage = null ;
-		
-//		cvDrawContours(testImg, innerContour, CV_RGB(255,0,0), CV_RGB(0,0,255), 0, 4, 8); // рисуем контур
-//		testSource.showImage(sourceConverter.convert(testImg));
-//		testSource.setSize(320*2, 240*2);
-		
-		CvSeq poly = cvApproxPoly(						// - ппроксимация контура(кривой) полигонами
-				contour, 								// - исходная последовательность или массив точек
-				Loader.sizeof(CvContour.class),			// - размер заголовка кривой(контура)
-				storage, 								// - хранилище контуров. (Если NULL, то используется хранилище входной последовательности)
-				CV_POLY_APPROX_DP, 						// - метод аппроксимации
-														//   CV_POLY_APPROX_DP 		0 // Douglas-Peucker algorithm
-				cvContourPerimeter(contour) * 0.1		// — параметр метода аппроксимации 
-														//   (в случае CV_POLY_APPROX_DP — это желаемая точность )
-				//4										// — параметр метода аппроксимаци (Не обязательынй)
-														//   (Если используется последовательность, то параметр определяет должна ли аппроксимироваться 
-														//   только одна последовательность или все последовательности этого уровня и ниже. 
-														//   Если массив точек , то параметр определяет закрывается ли кривая
-														//   (parameter2!=0) или нет (parameter2=0).
-		);
 
-		if (poly.total() == 4) {
-			CvPoint[] points = new CvPoint[4];
-			for (int i = 0; i < 4; i++){
-				CvPoint point = new CvPoint(cvGetSeqElem(poly, i));
-				points[i] = (point);
+		if (contour != null && !contour.isNull() && contour.total()>0) {
+			CvSeq poly = cvApproxPoly(						// - ппроксимация контура(кривой) полигонами
+					contour, 								// - исходная последовательность или массив точек
+					Loader.sizeof(CvContour.class),			// - размер заголовка кривой(контура)
+					CvMemStorage.create(), 					// - хранилище контуров. (Если NULL, то используется хранилище входной последовательности)
+					CV_POLY_APPROX_DP, 						// - метод аппроксимации
+															//   CV_POLY_APPROX_DP 		0 // Douglas-Peucker algorithm
+					cvContourPerimeter(contour) * 0.1		// — параметр метода аппроксимации 
+															//   (в случае CV_POLY_APPROX_DP — это желаемая точность )
+					//4										// — параметр метода аппроксимаци (Не обязательынй)
+															//   (Если используется последовательность, то параметр определяет должна ли аппроксимироваться 
+															//   только одна последовательность или все последовательности этого уровня и ниже. 
+															//   Если массив точек , то параметр определяет закрывается ли кривая
+															//   (parameter2!=0) или нет (parameter2=0).
+			);
+
+			if (!poly.isNull() && poly.total() == 4) {
+				CvPoint[] points = new CvPoint[4];
+				for (int i = 0; i < 4; i++){
+					CvPoint point = new CvPoint(cvGetSeqElem(poly, i));
+					points[i] = (point);
+				}
+				return sortPoints(points);
+				//return points;
+			} else {
+				return null;
 			}
-			return sortPoints(points);
 		} else {
 			return null;
 		}
@@ -411,5 +377,21 @@ public class ImageHandler {
 			result[i] = new CvPoint(middle_x, middle_y);
 		}
 		return result;
+	}
+	
+	public IplImage createImage(CvSize size, int channels) {
+		IplImage img = cvCreateImage(size, IPL_DEPTH_8U, channels );
+		cvSet(img, CvScalar.BLACK);
+		return img;
+	}
+	
+	public void release() {
+		cvRelease(origin);
+		cvRelease(r_channel);
+		cvRelease(g_channel);
+		cvRelease(b_channel);
+		cvRelease(rgb_summ);
+		cvRelease(contours);
+		cvRelease(result);
 	}
 }

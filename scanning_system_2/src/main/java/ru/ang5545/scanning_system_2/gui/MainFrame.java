@@ -13,6 +13,7 @@ import javax.swing.SwingWorker;
 import ru.ang5545.scanning_system_2.cam_acces.DeviceManager;
 import ru.ang5545.scanning_system_2.cam_acces.Grabber;
 import ru.ang5545.scanning_system_2.image_processing.ImageHandler;
+import ru.ang5545.scanning_system_2.image_processing.ImageHelper;
 import ru.ang5545.scanning_system_2.image_processing.ImageLoader;
 
 
@@ -30,8 +31,8 @@ public class MainFrame extends JFrame{
 	private static final int IMG_PAN_WITH_SLIDER_HEIGHT = 240;
 	
 	private AnswerWorker aw;
-	//private Grabber grabber;
-	private ImageLoader grabber;
+	private Grabber grabber;
+	//private ImageLoader grabber;
 	
 	private DeviceManager dm;
 	private ImageHandler ih;
@@ -68,7 +69,6 @@ public class MainFrame extends JFrame{
 		
 		// - create default components - 
 		this.dm = new DeviceManager();
-		this.ih = new ImageHandler(dm.getResolutuon());
 	}
 
 	public void showFrame() {
@@ -108,8 +108,9 @@ public class MainFrame extends JFrame{
 	
 	private class StartGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			//grabber = new Grabber(dm.getCamIndex());
-			grabber = new ImageLoader();
+			grabber = new Grabber(dm.getCamIndex());
+			//grabber = new ImageLoader();
+			ih = new ImageHandler();
 			aw = new AnswerWorker();
 			aw.execute();
 		}
@@ -144,13 +145,9 @@ public class MainFrame extends JFrame{
 				ih.setGreenThresholdParameters(greenMinTh, greenMaxTh);
 				ih.setBlueThresholdParameters(blueMinTh, blueMaxTh);
 				
+
 				ih.processImage(grabber.grab());
-//
-//				BufferedImage image			= ih.getOrigin();
-//				BufferedImage redImage 		= ih.get_r_plane(redMinTh, redMaxTh);
-//				BufferedImage greenImage 	= ih.get_g_plane(greenMinTh, greenMaxTh);
-//				BufferedImage blueImage 	= ih.get_b_plane(blueMinTh, blueMaxTh);
-//				
+
 				origImg.setImage(ih.getOrigin());
 				red_channelsPan.setImage(ih.getRedChannel());
 				green_channelsPan.setImage(ih.getGreenChannel());
@@ -160,6 +157,7 @@ public class MainFrame extends JFrame{
 				countImg.setImage(ih.get_contour());
 				mainPan.setImage(ih.getResultl());
 				
+				ih.release();
 			}
 			return "succes";
 		}

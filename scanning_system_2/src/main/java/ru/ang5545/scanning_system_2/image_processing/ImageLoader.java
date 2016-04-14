@@ -58,7 +58,8 @@ public class ImageLoader {
 	
 	
 	public IplImage grab() {
-		sleep(1000);
+		//sleep(1000);
+		System.out.println("grab");
 		String path = dirPath + "image" + i + IMG_FORMAT;
 		this.img	= cvLoadImage(path, 3);
 		this.i = i < 5 ? i + 1 :  1;
@@ -69,7 +70,11 @@ public class ImageLoader {
 		return img;
 	}
 	
+	public void release() {
+		cvRelease(this.img);
+	}
+	
 	public void stopGrub() {
-		
+		cvRelease(img);
 	}
 }
