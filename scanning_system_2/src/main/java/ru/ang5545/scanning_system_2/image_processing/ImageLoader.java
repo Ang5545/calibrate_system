@@ -3,7 +3,6 @@ package ru.ang5545.scanning_system_2.image_processing;
 import static org.bytedeco.javacpp.helper.opencv_core.CV_RGB;
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_highgui.*;
-import static org.bytedeco.javacpp.opencv_imgproc.cvCanny;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 import java.awt.Graphics2D;
@@ -19,12 +18,12 @@ import java.util.Map;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSize;
-
+import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import javax.swing.JFrame;
+
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
-
 
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
@@ -59,7 +58,6 @@ public class ImageLoader {
 	
 	public IplImage grab() {
 		//sleep(1000);
-		System.out.println("grab");
 		String path = dirPath + "image" + i + IMG_FORMAT;
 		this.img	= cvLoadImage(path, 3);
 		this.i = i < 5 ? i + 1 :  1;
@@ -76,5 +74,13 @@ public class ImageLoader {
 	
 	public void stopGrub() {
 		cvRelease(img);
+	}
+	
+	public CvSize getResolution() {
+		String path = dirPath + "image" + i + IMG_FORMAT;
+		IplImage img = cvLoadImage(path, 3);
+		CvSize size =  new CvSize(img.width(), img.height());
+		cvRelease(img);
+		return size;
 	}
 }

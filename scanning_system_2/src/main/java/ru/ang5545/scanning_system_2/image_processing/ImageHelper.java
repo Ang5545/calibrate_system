@@ -2,23 +2,21 @@ package ru.ang5545.scanning_system_2.image_processing;
 
 import java.awt.image.BufferedImage;
 
-
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 
-
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-
 import static org.bytedeco.javacpp.helper.opencv_core.CV_RGB;
 import static org.bytedeco.javacpp.opencv_core.*;
 
 import java.awt.image.BufferedImage;
 
 import org.bytedeco.javacpp.opencv_core.CvScalar;
+import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.Frame;
 import org.bytedeco.javacv.Java2DFrameConverter;
@@ -51,5 +49,11 @@ public class ImageHelper {
         scalar.setVal(2, b);
 	    cvSet( img , scalar );		
 	    return img;
+	}
+	
+	public static IplImage createImage(CvSize size, int channels) {
+		IplImage img = cvCreateImage(size, IPL_DEPTH_8U, channels );
+		cvSet(img, CvScalar.BLACK);
+		return img;
 	}
 }

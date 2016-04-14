@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
+import ru.ang5545.model.ThresholdParameters;
 import ru.ang5545.scanning_system_2.cam_acces.DeviceManager;
 import ru.ang5545.scanning_system_2.cam_acces.Grabber;
 import ru.ang5545.scanning_system_2.image_processing.ImageHandler;
@@ -110,7 +111,7 @@ public class MainFrame extends JFrame{
 		public void actionPerformed(ActionEvent e) {
 			grabber = new Grabber(dm.getCamIndex());
 			//grabber = new ImageLoader();
-			ih = new ImageHandler();
+			ih = new ImageHandler(grabber.getResolution());
 			aw = new AnswerWorker();
 			aw.execute();
 		}
@@ -134,19 +135,11 @@ public class MainFrame extends JFrame{
 			
 			while(doIt) {
 				
-				int redMinTh 	= red_channelsPan.minTh;
-				int redMaxTh 	= red_channelsPan.maxTh;
-				int greenMinTh 	= green_channelsPan.minTh;
-				int greenMaxTh 	= green_channelsPan.maxTh;
-				int blueMinTh 	= blue_channelsPan.minTh;
-				int blueMaxTh 	= blue_channelsPan.maxTh;
+				ThresholdParameters redThPar = red_channelsPan.getThresholdParameters();
+				ThresholdParameters greenThPar = green_channelsPan.getThresholdParameters();
+				ThresholdParameters blueThPar = blue_channelsPan.getThresholdParameters();
 
-				ih.setRedThresholdParameters(redMinTh, redMaxTh);
-				ih.setGreenThresholdParameters(greenMinTh, greenMaxTh);
-				ih.setBlueThresholdParameters(blueMinTh, blueMaxTh);
-				
-
-				ih.processImage(grabber.grab());
+				ih.processImage(grabber.grab(), redThPar, greenThPar, blueThPar);
 
 				origImg.setImage(ih.getOrigin());
 				red_channelsPan.setImage(ih.getRedChannel());
