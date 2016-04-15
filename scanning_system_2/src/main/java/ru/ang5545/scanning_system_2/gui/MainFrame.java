@@ -15,6 +15,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
+import com.apple.eawt.Application;
+
 import ru.ang5545.model.ThresholdParameters;
 import ru.ang5545.scanning_system_2.cam_acces.DeviceManager;
 import ru.ang5545.scanning_system_2.cam_acces.Grabber;
@@ -65,8 +67,10 @@ public class MainFrame extends JFrame{
 		this.setResizable(false);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.getContentPane().setLayout(new BorderLayout());
-		this.setIconImage(new ImageIcon(Path.getAppPath() + FRAME_ICON).getImage());
 		
+		Image appIcon = new ImageIcon(Path.getAppPath() + FRAME_ICON).getImage();
+		this.setIconImage(appIcon);									// for other OS
+		Application.getApplication().setDockIconImage(appIcon);		// for Mac OS X
 		
 		// - add components -
 		JPanel centerPan = new JPanel();
