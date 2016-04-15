@@ -7,16 +7,27 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.InputVerifier;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import ru.ang5545.model.ThresholdParameters;
 
@@ -82,7 +93,8 @@ public class ImageChannelPanel extends ImagePanel {
 		this.minThField.setPreferredSize( new Dimension( FILED_WIDTH, FIELD_HEIGHT ) );
 		this.minThField.setText( String.valueOf( thPar.getMin() ));
 		this.minThField.setHorizontalAlignment(JTextField.CENTER);
-
+		this.minThField.addKeyListener(getMinTecFileldListener());
+		
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridx = 1;
 		c.gridy = 0;
@@ -109,6 +121,8 @@ public class ImageChannelPanel extends ImagePanel {
 		this.maxThField.setPreferredSize( new Dimension( FILED_WIDTH, FIELD_HEIGHT ) );
 		this.maxThField.setText( String.valueOf( thPar.getMax() ));
 		this.maxThField.setHorizontalAlignment(JTextField.CENTER);
+		this.maxThField.addKeyListener(getMaxTecFileldListener());
+		
 		c.fill = GridBagConstraints.HORIZONTAL;
 		c.gridx = 1;
 		c.gridy = 2;
@@ -124,6 +138,7 @@ public class ImageChannelPanel extends ImagePanel {
 		pane.add(max_slider, c);
 		
 		this.add(pane);
+		
 	}
 	
 	
@@ -131,13 +146,7 @@ public class ImageChannelPanel extends ImagePanel {
 	    public void stateChanged(ChangeEvent e) {
 	        JSlider source = (JSlider) e.getSource();
 	        if (!source.getValueIsAdjusting()) {
-	        	thPar.setMin( (int)source.getValue() );
-	        	minThField.setText( String.valueOf( thPar.getMin() ));
-	        	if (thPar.getMin() > thPar.getMax()) {
-	        		thPar.setMax(thPar.getMin()+1);
-	        		maxThField.setText( String.valueOf( thPar.getMax() ));
-	        		max_slider.setValue( thPar.getMax() );
-	        	}
+	        	setMinTh((int)source.getValue());
 	        }    
 	    }
 	}
@@ -146,15 +155,75 @@ public class ImageChannelPanel extends ImagePanel {
 	    public void stateChanged(ChangeEvent e) {
 	        JSlider source = (JSlider) e.getSource();
 	        if (!source.getValueIsAdjusting()) {
-	        	thPar.setMax((int) source.getValue());
-	        	maxThField.setText( String.valueOf( thPar.getMax() ));
-	        	if ( thPar.getMax() < thPar.getMin() ) {
-	        		thPar.setMin(thPar.getMax() - 1);
-	        		minThField.setText( String.valueOf( thPar.getMin() ));
-	        		min_slider.setValue( thPar.getMax() );
-	        	}
+	        	setMaxTh( (int) source.getValue() );
 	        }    
 	    }
+	}
+	
+	
+	private void setMaxTh(int val) {
+    	if (val < thPar.getMin() ) {
+    		thPar.setMin(val - 1);
+    		minThField.setText( String.valueOf(thPar.getMin()));
+    		min_slider.setValue( thPar.getMin() );
+    	}
+    	maxThField.setText( String.valueOf(val));
+    	thPar.setMax(val);
+	}
+
+	private void setMinTh(int val) {
+    	if (val > thPar.getMax()) {
+    		thPar.setMax(val+1);
+    		maxThField.setText( String.valueOf( thPar.getMax() ));
+    		max_slider.setValue( thPar.getMax() );
+    	}
+    	minThField.setText( String.valueOf(val));
+    	thPar.setMin(val);
+	}
+
+	
+	private KeyAdapter getMinTecFileldListener(){
+		KeyAdapter ka = new KeyAdapter() {
+	        public void keyReleased(KeyEvent ke) {
+	        	String tfVal = minThField.getText();
+	        	if (tfVal.length() > 0) {
+		        	try {
+		        		int val = Integer.parseInt(tfVal);
+		        		if (val >= MIN_VALUE && val <= MAX_VALUE) {
+		        			setMinTh(val);
+		        			min_slider.setValue( val );
+		        		} else {
+		        			minThField.setText(String.valueOf(thPar.getMin()));
+	        			}
+		        	} catch (Exception ex) {
+		        		minThField.setText(String.valueOf(thPar.getMax()));
+		        	}
+	        	}
+	        }
+	    };
+	    return ka;
+	} 
+	
+	private KeyAdapter getMaxTecFileldListener() {
+		KeyAdapter ka = new KeyAdapter() {
+	        public void keyReleased(KeyEvent ke) {
+	        	String tfVal = maxThField.getText();
+	        	if (tfVal.length() > 0) {
+	        		try {
+	        			int val = Integer.parseInt(tfVal);
+	        			if (val >= MIN_VALUE && val <= MAX_VALUE) {
+	        				setMaxTh(val);
+	        				max_slider.setValue( val );
+	        			} else {
+	        				maxThField.setText(String.valueOf(thPar.getMax()));
+	        			}
+	        		} catch (Exception ex) {
+	        			maxThField.setText(String.valueOf(thPar.getMax()));
+	        		}
+	        	}
+	        }
+	    };
+	    return ka;
 	}
 	
 	public ThresholdParameters getThresholdParameters() {

@@ -31,7 +31,7 @@ import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 public class ImageLoader {
 
-	private static final String IMAGES_DIR 	= "/testImages/";
+	private static final String IMAGES_DIR 	= "/resources/testImages/";
 	private static final String IMG_FORMAT 	= ".png";
 	private int i;
 	
@@ -56,7 +56,7 @@ public class ImageLoader {
 		//sleep(1000);
 		String path = dirPath + "image" + i + IMG_FORMAT;
 		this.img	= cvLoadImage(path, 3);
-		this.i = i < 5 ? i + 1 :  1;
+		this.i = i < 14 ? i + 1 :  1;
 		return img;
 	}
 

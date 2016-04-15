@@ -146,9 +146,8 @@ public class ContourHandler {
 		}
 	}
 	
-	
-//	TODO ошибка в алгоритме. Работает без него!
-	private static CvPoint[] sortPoints(CvPoint[] points) {
+
+	private CvPoint[] sortPoints(CvPoint[] points) {
 		CvPoint[] result = points;
 		// - сортировка  по x - 
 		for (int i = result.length-1 ; i > 0 ; i--) {  	// Внешний цикл каждый раз сокращает фрагмент массива, 
@@ -180,7 +179,7 @@ public class ContourHandler {
 		return result;
 	}
 	
-	private static CvPoint[] getMiddlePoints(CvPoint[] points_1, CvPoint[] points_2) {
+	private CvPoint[] getMiddlePoints(CvPoint[] points_1, CvPoint[] points_2) {
 		CvPoint[] result = new CvPoint[4];
 		for (int i = 0; i < 4; i++) {
 			int max_x = 0;
@@ -209,6 +208,17 @@ public class ContourHandler {
 		return result;
 	}
 	
+	
+	private CvPoint[] getImgCornersPoints(IplImage src) {
+		CvPoint[] result = new CvPoint[4];		
+		result[0] = new CvPoint(0, 				0);
+		result[1] = new CvPoint(0, 				src.height());
+		result[2] = new CvPoint(src.width(),	src.height());
+		result[3] = new CvPoint(src.width(), 	0);
+		return result;
+	}
+	
+	
 	public void drawPoints(IplImage src) {
 		if (innerContour.total() > 0 && outerContour.total() > 0) {
 		
@@ -225,8 +235,13 @@ public class ContourHandler {
 				}
 				
 				CvPoint[] middlePoints = getMiddlePoints(outerPoints, innerPoints);
+				CvPoint[] imgCornersPoints = getImgCornersPoints(src);
+				
 				for (int i = 0; i < 4; i++) {
-					drawCircle(src, middlePoints[i], CvScalar.WHITE, 20);
+					drawCircle(src, middlePoints[i], CvScalar.BLACK, 20);
+					drawCircle(src, middlePoints[i], CvScalar.WHITE, 14);
+					drawCircle(src, middlePoints[i], CvScalar.BLACK, 7);		
+					cvLine(src, middlePoints[i], imgCornersPoints[i], CvScalar.WHITE, 3, CV_AA, 0);
 				}
 			}
 		}
