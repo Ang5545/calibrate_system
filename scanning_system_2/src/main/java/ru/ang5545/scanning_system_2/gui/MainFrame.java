@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
@@ -28,7 +29,7 @@ import ru.ang5545.utils.Path;
 public class MainFrame extends JFrame{
 	
 	private static final String FRAME_NAME = "Scanning system";
-	private static final String FRAME_ICON = "/Users/fedormurashko/Develop/Java/git/scanning_system_2/scanning_system_2/resources/appIcon.png";
+	private static final String FRAME_ICON = "/resources/appIcon.png";
 	
 	private static final int WINDOW_WIDTH = 1000;
 	private static final int WINDOW_HEIGHT = 400;
@@ -64,9 +65,8 @@ public class MainFrame extends JFrame{
 		this.setResizable(false);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.getContentPane().setLayout(new BorderLayout());
-		System.out.println(Path.getAppPath() + FRAME_ICON);
-		System.out.println(new ImageIcon(Path.getAppPath() + FRAME_ICON).getImage());
-		this.setIconImage(new ImageIcon(FRAME_ICON).getImage());
+		this.setIconImage(new ImageIcon(Path.getAppPath() + FRAME_ICON).getImage());
+		
 		
 		// - add components -
 		JPanel centerPan = new JPanel();
