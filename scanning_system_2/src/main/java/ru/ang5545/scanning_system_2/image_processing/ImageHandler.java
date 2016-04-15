@@ -38,7 +38,7 @@ public class ImageHandler {
 		contHandler.processImage(chanHandler.getRgbSumm());
 		
 		contHandler.drawContours(contours, CvScalar.BLUE, CvScalar.RED, 6);
-		contHandler.drawContours(result, CvScalar.BLUE, CvScalar.RED, 6);
+		contHandler.drawContours(result, CvScalar.GREEN, CvScalar.GREEN, 6);
 		
 		contHandler.drawPoints(result);
 	}

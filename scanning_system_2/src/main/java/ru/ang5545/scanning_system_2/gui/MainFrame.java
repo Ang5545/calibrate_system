@@ -18,7 +18,7 @@ import ru.ang5545.scanning_system_2.image_processing.ImageHandler;
 import ru.ang5545.scanning_system_2.image_processing.ImageLoader;
 import ru.ang5545.utils.Path;
 
-import com.apple.eawt.Application;
+//import com.apple.eawt.Application;
 
 public class MainFrame extends JFrame{
 	
@@ -64,7 +64,7 @@ public class MainFrame extends JFrame{
 		this.setIconImage(appIcon);									// for other OS
 		
 		// TODO change to work this on PC 
-		Application.getApplication().setDockIconImage(appIcon);		// for Mac OS X
+		//Application.getApplication().setDockIconImage(appIcon);		// for Mac OS X
 		
 		
 		// - add components -

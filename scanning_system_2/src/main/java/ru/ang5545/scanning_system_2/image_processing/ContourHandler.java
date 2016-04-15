@@ -114,11 +114,10 @@ public class ContourHandler {
 	private CvPoint[] getPoints(CvSeq contour) {
 
 		if (contour != null && !contour.isNull() && contour.total()>0) {
-			CvMemStorage storage = CvMemStorage.create();
 			CvSeq poly = cvApproxPoly(						// - ппроксимация контура(кривой) полигонами
 					contour, 								// - исходная последовательность или массив точек
 					Loader.sizeof(CvContour.class),			// - размер заголовка кривой(контура)
-					storage, 								// - хранилище контуров. (Если NULL, то используется хранилище входной последовательности)
+					null, 									// - хранилище контуров. (Если NULL, то используется хранилище входной последовательности)
 					CV_POLY_APPROX_DP, 						// - метод аппроксимации
 															//   CV_POLY_APPROX_DP 		0 // Douglas-Peucker algorithm
 					cvContourPerimeter(contour) * 0.1		// — параметр метода аппроксимации 
@@ -136,12 +135,9 @@ public class ContourHandler {
 					CvPoint point = new CvPoint(cvGetSeqElem(poly, i));
 					points[i] = (point);
 				}
-				storage.release();
 				cvRelease(poly);
-				return points;
-				//return sortPoints(points);
+				return sortPoints(points);
 			} else {
-				storage.release();
 				cvRelease(poly);
 				return null;
 			}
@@ -152,37 +148,37 @@ public class ContourHandler {
 	
 	
 //	TODO ошибка в алгоритме. Работает без него!
-//	private static CvPoint[] sortPoints(CvPoint[] points) {
-//		CvPoint[] result = points;
-//		// - сортировка  по x - 
-//		for (int i = result.length-1 ; i > 0 ; i--) {  	// Внешний цикл каждый раз сокращает фрагмент массива, 
-//														// так как внутренний цикл каждый раз ставит в конец фрагмента 
-//														// максимальный элемент
-//			for (int j = 0 ; j < i ; j++) {
-//				if (result[j].x() > result[j+1].x()) {  // Сравниваем элементы попарно, если они имеют неправильный порядок, 
-//														// то меняем местами
-//					CvPoint tmp = result[j];
-//					result[j] = result[j+1];
-//					result[j+1] = tmp;
-//				}
-//	        }
-//	    }
-//		
-//		// сортировка по  y - 
-//		CvPoint p1 = result[0];
-//		CvPoint p2 = result[1];
-//		if (p1.y() > p2.y()) {
-//			result[0] = p2;
-//			result[1] = p1;
-//		}
-//		CvPoint p3 = result[2];
-//		CvPoint p4 = result[3];
-//		if (p3.y() < p3.y()) {
-//			result[2] = p4;
-//			result[3] = p3;
-//		}
-//		return result;
-//	}
+	private static CvPoint[] sortPoints(CvPoint[] points) {
+		CvPoint[] result = points;
+		// - сортировка  по x - 
+		for (int i = result.length-1 ; i > 0 ; i--) {  	// Внешний цикл каждый раз сокращает фрагмент массива, 
+														// так как внутренний цикл каждый раз ставит в конец фрагмента 
+														// максимальный элемент
+			for (int j = 0 ; j < i ; j++) {
+				if (result[j].x() > result[j+1].x()) {  // Сравниваем элементы попарно, если они имеют неправильный порядок, 
+														// то меняем местами
+					CvPoint tmp = result[j];
+					result[j] = result[j+1];
+					result[j+1] = tmp;
+				}
+	        }
+	    }
+		
+		// сортировка по  y - 
+		CvPoint p1 = result[0];
+		CvPoint p2 = result[1];
+		if (p1.y() > p2.y()) {
+			result[0] = p2;
+			result[1] = p1;
+		}
+		CvPoint p3 = result[2];
+		CvPoint p4 = result[3];
+		if (p3.y() < p3.y()) {
+			result[2] = p4;
+			result[3] = p3;
+		}
+		return result;
+	}
 	
 	private static CvPoint[] getMiddlePoints(CvPoint[] points_1, CvPoint[] points_2) {
 		CvPoint[] result = new CvPoint[4];
@@ -225,7 +221,7 @@ public class ContourHandler {
 					CvPoint outP = outerPoints[i];
 					cvDrawCircle(src, inP, 5, CvScalar.WHITE, -1, 8, 0);
 					cvDrawCircle(src, outP, 5, CvScalar.WHITE, -1, 8, 0);
-					cvLine(src, inP, outP, CvScalar.RED, 3, CV_AA, 0);	
+					cvLine(src, inP, outP, CvScalar.YELLOW, 3, CV_AA, 0);	
 				}
 				
 				CvPoint[] middlePoints = getMiddlePoints(outerPoints, innerPoints);
