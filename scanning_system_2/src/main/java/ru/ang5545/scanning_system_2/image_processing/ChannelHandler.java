@@ -36,22 +36,17 @@ public class ChannelHandler {
 		cvSet(greenChannel, CvScalar.BLACK);
 		cvSet(blueChannel, 	CvScalar.BLACK);
 		cvSet(rgbSumm, 		CvScalar.BLACK);
+
+		cvSplit( img, blueChannel, greenChannel, redChannel, null );
 		
-		CvSize size =  new CvSize(img.width(), img.height());
-		IplImage red 	= ImageHelper.createImage(size, 1); 
-		IplImage green 	= ImageHelper.createImage(size, 1); 
-		IplImage blue 	= ImageHelper.createImage(size, 1); 
-		
-		cvSplit( img, blue, green, red, null );
-		
-		this.redChannel 	= threshold(red, redThPar.getMin(), redThPar.getMax());
-		this.greenChannel 	= threshold(green, greenThPar.getMin(), greenThPar.getMax());
-		this.blueChannel 	= threshold(blue, blueThPar.getMin(), blueThPar.getMax());
-		
-		this.rgbSumm = sumChannels(redChannel, greenChannel, blueChannel);
+		threshold(blueChannel, blueThPar.getMin(), blueThPar.getMax());
+		threshold(greenChannel, greenThPar.getMin(), greenThPar.getMax());
+		threshold(redChannel, redThPar.getMin(), redThPar.getMax());
+
+		sumChannels(rgbSumm, redChannel, greenChannel, blueChannel);
 	}
 	
-	public IplImage threshold( IplImage img, int min, int max){
+	public void threshold( IplImage img, int min, int max){
 		IplImage src = cvCloneImage(img);
 		cvInRangeS( 
 			src, 			// - исходный массив
@@ -60,33 +55,29 @@ public class ChannelHandler {
 			img				// - массив для хранения результата (тип 8S или 8U)
 		);
 		cvReleaseImage(src);
-		return img;
+		//return img;
 	}
 	
-	public IplImage sumChannels(IplImage r_channel, IplImage g_channel, IplImage b_channel) {	
-		
-		IplImage img = cvCloneImage(r_channel);
-		cvSet(img, CvScalar.BLACK);
-		
+	public void sumChannels(IplImage rgb, IplImage r_channel, IplImage g_channel, IplImage b_channel) {	
+
 		ByteBuffer bb_red 	= r_channel.createBuffer();
 		ByteBuffer bb_green = g_channel.createBuffer();
 		ByteBuffer bb_blue 	= b_channel.createBuffer();
 
-		for(int y = 0; y < img.height(); y++) {
-		    for(int x = 0; x < img.width(); x++) {
+		for(int y = 0; y < rgb.height(); y++) {
+		    for(int x = 0; x < rgb.width(); x++) {
 
-		        int index = y * img.widthStep() + x * img.nChannels();
+		        int index = y * rgb.widthStep() + x * rgb.nChannels();
 		        int r_val = bb_red.get(index) & 0xFF; // the 0xFF is needed to cast from an unsigned byte to an int.
 		        int g_val = bb_green.get(index) & 0xFF; 
 		        int b_val = bb_blue.get(index) & 0xFF; 
 		        
 		        if ( (r_val > 0 && g_val > 0) || (g_val > 0 && b_val > 0) ||  (r_val > 0 && b_val > 0) ) {
-		        	cvSet2D(img, y, x, CvScalar.WHITE );	        	
+		        	cvSet2D(rgb, y, x, CvScalar.WHITE );	        	
 		        }
 		        
 		    }
 		}
-		return img;
 	}
 	
 	public IplImage getRedChannel() {

@@ -1,39 +1,15 @@
 package ru.ang5545.scanning_system_2.image_processing;
 
-import static org.bytedeco.javacpp.helper.opencv_imgproc.cvDrawContours;
-//import static org.bytedeco.javacpp.helper.opencv_core.cvDrawContours;
-import static org.bytedeco.javacpp.helper.opencv_imgproc.cvFindContours;
-import static org.bytedeco.javacpp.opencv_core.IPL_DEPTH_8U;
 import static org.bytedeco.javacpp.opencv_core.cvCloneImage;
-import static org.bytedeco.javacpp.opencv_core.cvCreateImage;
-import static org.bytedeco.javacpp.opencv_core.cvGetSeqElem;
-import static org.bytedeco.javacpp.opencv_core.cvInRangeS;
 import static org.bytedeco.javacpp.opencv_core.cvRelease;
-import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
-import static org.bytedeco.javacpp.opencv_core.cvScalar;
-import static org.bytedeco.javacpp.opencv_core.cvSet;
-import static org.bytedeco.javacpp.opencv_core.cvSet2D;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_AA;
-import static org.bytedeco.javacpp.opencv_imgproc.CV_POLY_APPROX_DP;
-import static org.bytedeco.javacpp.opencv_imgproc.cvApproxPoly;
-import static org.bytedeco.javacpp.opencv_imgproc.cvContourArea;
-import static org.bytedeco.javacpp.opencv_imgproc.cvContourPerimeter;
-import static org.bytedeco.javacpp.opencv_imgproc.cvDrawCircle;
-import static org.bytedeco.javacpp.opencv_imgproc.cvLine;
 
 import java.awt.image.BufferedImage;
-import java.nio.ByteBuffer;
 
-import org.bytedeco.javacpp.Loader;
-import org.bytedeco.javacpp.opencv_core.CvContour;
-import org.bytedeco.javacpp.opencv_core.CvMemStorage;
-import org.bytedeco.javacpp.opencv_core.CvPoint;
-import org.bytedeco.javacpp.opencv_core.CvScalar;
-import org.bytedeco.javacpp.opencv_core.CvSeq;
 import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
 import ru.ang5545.model.ThresholdParameters;
+//import static org.bytedeco.javacpp.helper.opencv_core.cvDrawContours;
 
 
 public class ImageHandler {
@@ -51,11 +27,11 @@ public class ImageHandler {
 	}
 
 	public void processImage(IplImage img, ThresholdParameters redThPar, ThresholdParameters greenThPar, ThresholdParameters blueThPar) {
-		CvSize size =  new CvSize(img.width(), img.height());
+//		CvSize size =  new CvSize(img.width(), img.height());
 		this.origin		= cvCloneImage(img);
 
 		chanHandler.processImg(img, redThPar, greenThPar, blueThPar);
-		contHandler.processImage(chanHandler.getRgbSumm());
+//		contHandler.processImage(chanHandler.getRgbSumm());
 		
 	//	this.contours = contHandler.drawContours(ImageHelper.createImage(size, 3), CvScalar.BLUE, CvScalar.WHITE, 6);
 	//	this.result = contHandler.drawContours(img, CvScalar.BLUE, CvScalar.WHITE, 6);
@@ -99,7 +75,7 @@ public class ImageHandler {
 	}
 	
 	public void release() {
-//		cvRelease(origin);
+		cvRelease(origin);
 //		cvRelease(contours);
 //		cvRelease(result);
 	}

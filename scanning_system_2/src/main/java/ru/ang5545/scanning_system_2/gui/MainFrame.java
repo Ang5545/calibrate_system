@@ -2,10 +2,14 @@ package ru.ang5545.scanning_system_2.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
@@ -16,6 +20,7 @@ import ru.ang5545.scanning_system_2.cam_acces.Grabber;
 import ru.ang5545.scanning_system_2.image_processing.ImageHandler;
 import ru.ang5545.scanning_system_2.image_processing.ImageHelper;
 import ru.ang5545.scanning_system_2.image_processing.ImageLoader;
+import ru.ang5545.utils.Path;
 
 
 
@@ -23,6 +28,7 @@ import ru.ang5545.scanning_system_2.image_processing.ImageLoader;
 public class MainFrame extends JFrame{
 	
 	private static final String FRAME_NAME = "Scanning system";
+	private static final String FRAME_ICON = "/Users/fedormurashko/Develop/Java/git/scanning_system_2/scanning_system_2/resources/appIcon.png";
 	
 	private static final int WINDOW_WIDTH = 1000;
 	private static final int WINDOW_HEIGHT = 400;
@@ -52,13 +58,15 @@ public class MainFrame extends JFrame{
 	
 	public MainFrame() {
 		super(FRAME_NAME);
-		
 		// - set window parameters - 
 		this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 		this.setMinimumSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
 		this.setResizable(false);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.getContentPane().setLayout(new BorderLayout());
+		System.out.println(Path.getAppPath() + FRAME_ICON);
+		System.out.println(new ImageIcon(Path.getAppPath() + FRAME_ICON).getImage());
+		this.setIconImage(new ImageIcon(FRAME_ICON).getImage());
 		
 		// - add components -
 		JPanel centerPan = new JPanel();
@@ -119,8 +127,9 @@ public class MainFrame extends JFrame{
 	
 	private class StopGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			grabber.stopGrub();
 			aw.cancel(true);
+			grabber.stopGrub();
+			ih.release();
 		}
 	}	
 	
