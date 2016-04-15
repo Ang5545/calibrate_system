@@ -3,30 +3,22 @@ package ru.ang5545.scanning_system_2.gui;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
-
-import com.apple.eawt.Application;
 
 import ru.ang5545.model.ThresholdParameters;
 import ru.ang5545.scanning_system_2.cam_acces.DeviceManager;
 import ru.ang5545.scanning_system_2.cam_acces.Grabber;
 import ru.ang5545.scanning_system_2.image_processing.ImageHandler;
-import ru.ang5545.scanning_system_2.image_processing.ImageHelper;
 import ru.ang5545.scanning_system_2.image_processing.ImageLoader;
 import ru.ang5545.utils.Path;
 
-
-
+import com.apple.eawt.Application;
 
 public class MainFrame extends JFrame{
 	
@@ -41,8 +33,8 @@ public class MainFrame extends JFrame{
 	private static final int IMG_PAN_WITH_SLIDER_HEIGHT = 240;
 	
 	private AnswerWorker aw;
-	private Grabber grabber;
-	//private ImageLoader grabber;
+	//private Grabber grabber;
+	private ImageLoader grabber;
 	
 	private DeviceManager dm;
 	private ImageHandler ih;
@@ -70,7 +62,10 @@ public class MainFrame extends JFrame{
 		
 		Image appIcon = new ImageIcon(Path.getAppPath() + FRAME_ICON).getImage();
 		this.setIconImage(appIcon);									// for other OS
+		
+		// TODO change to work this on PC 
 		Application.getApplication().setDockIconImage(appIcon);		// for Mac OS X
+		
 		
 		// - add components -
 		JPanel centerPan = new JPanel();
@@ -121,8 +116,8 @@ public class MainFrame extends JFrame{
 	
 	private class StartGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			grabber = new Grabber(dm.getCamIndex());
-			//grabber = new ImageLoader();
+			//grabber = new Grabber(dm.getCamIndex());
+			grabber = new ImageLoader();
 			ih = new ImageHandler(grabber.getResolution());
 			aw = new AnswerWorker();
 			aw.execute();
@@ -163,6 +158,7 @@ public class MainFrame extends JFrame{
 				countImg.setImage(ih.get_contour());
 				mainPan.setImage(ih.getResultl());
 				
+				grabber.release();
 				ih.release();
 			}
 			return "succes";

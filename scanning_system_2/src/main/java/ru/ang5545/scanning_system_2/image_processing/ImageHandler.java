@@ -1,10 +1,12 @@
 package ru.ang5545.scanning_system_2.image_processing;
 
 import static org.bytedeco.javacpp.opencv_core.cvCloneImage;
-import static org.bytedeco.javacpp.opencv_core.cvRelease;
+import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
+import static org.bytedeco.javacpp.opencv_core.cvSet;
 
 import java.awt.image.BufferedImage;
 
+import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
@@ -23,22 +25,22 @@ public class ImageHandler {
 
 	public ImageHandler(CvSize size) {
 		this.chanHandler = new ChannelHandler(size);
-		this.contHandler =  new ContourHandler();
+		this.contHandler =  new ContourHandler(size);
+		this.contours = ImageHelper.createImage(size, 3);
 	}
 
 	public void processImage(IplImage img, ThresholdParameters redThPar, ThresholdParameters greenThPar, ThresholdParameters blueThPar) {
-//		CvSize size =  new CvSize(img.width(), img.height());
 		this.origin		= cvCloneImage(img);
-
+		this.result		= cvCloneImage(img);
+		cvSet(contours, CvScalar.WHITE);
+			
 		chanHandler.processImg(img, redThPar, greenThPar, blueThPar);
-//		contHandler.processImage(chanHandler.getRgbSumm());
+		contHandler.processImage(chanHandler.getRgbSumm());
 		
-	//	this.contours = contHandler.drawContours(ImageHelper.createImage(size, 3), CvScalar.BLUE, CvScalar.WHITE, 6);
-	//	this.result = contHandler.drawContours(img, CvScalar.BLUE, CvScalar.WHITE, 6);
+		contHandler.drawContours(contours, CvScalar.BLUE, CvScalar.RED, 6);
+		contHandler.drawContours(result, CvScalar.BLUE, CvScalar.RED, 6);
 		
-		//IplImage imgWithCOntour =  contHandler.drawContours(img, CvScalar.GREEN, CvScalar.GREEN, 6);
-		//this.result = contHandler.drawPoints(imgWithCOntour);
-		//cvRelease(imgWithCOntour);
+		contHandler.drawPoints(result);
 	}
 	
 	// ///////////////////////////////
@@ -75,8 +77,8 @@ public class ImageHandler {
 	}
 	
 	public void release() {
-		cvRelease(origin);
-//		cvRelease(contours);
-//		cvRelease(result);
+		cvReleaseImage(origin);
+		cvReleaseImage(result);
+		contHandler.release();
 	}
 }

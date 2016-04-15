@@ -25,6 +25,7 @@ import javax.swing.JFrame;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
 
+import ru.ang5545.utils.Path;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 
@@ -38,12 +39,7 @@ public class ImageLoader {
 	private IplImage img;
 
 	public ImageLoader(){
-		try {
-			this.dirPath =  new File(".").getCanonicalPath() + IMAGES_DIR;
-		} catch (IOException e) {
-			System.out.println("directory not found");
-			e.printStackTrace();
-		}
+		this.dirPath =  Path.getAppPath() + IMAGES_DIR;
 		this.i = 1;
 	}
 	

@@ -5,6 +5,7 @@ import static org.bytedeco.javacpp.helper.opencv_imgproc.cvFindContours;
 import static org.bytedeco.javacpp.opencv_core.cvCloneImage;
 import static org.bytedeco.javacpp.opencv_core.cvGetSeqElem;
 import static org.bytedeco.javacpp.opencv_core.cvRelease;
+import static org.bytedeco.javacpp.opencv_core.cvSet;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_AA;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_POLY_APPROX_DP;
 import static org.bytedeco.javacpp.opencv_imgproc.cvApproxPoly;
@@ -13,7 +14,9 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvContourPerimeter;
 import static org.bytedeco.javacpp.opencv_imgproc.cvDrawCircle;
 import static org.bytedeco.javacpp.opencv_imgproc.cvLine;
 
+import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Loader;
+import org.bytedeco.javacpp.opencv_core.CvCloneFunc;
 import org.bytedeco.javacpp.opencv_core.CvContour;
 import org.bytedeco.javacpp.opencv_core.CvMemStorage;
 import org.bytedeco.javacpp.opencv_core.CvPoint;
@@ -25,18 +28,23 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 
 public class ContourHandler {
 
+	private IplImage src;
+	private CvSeq allContours;
 	private CvSeq innerContour;
 	private CvSeq outerContour;
 
-	
-	public ContourHandler() {
+
+	public ContourHandler(CvSize size) {
+		this.allContours  = new CvSeq();
 		this.innerContour = new CvSeq();
 		this.outerContour = new CvSeq();	
 	}
 	
-	public void processImage(IplImage img) {
-		CvSeq allContours = findContours(img);
+	public void processImage(IplImage image) {
+
+		this.src = cvCloneImage(image);
 		
+		findContours(src, allContours);		
 		double outArea = 0;
 		double innArea = 0;
 		
@@ -56,15 +64,12 @@ public class ContourHandler {
 		}
 	}
 	
-	public IplImage drawContours(IplImage img, CvScalar innColor, CvScalar outColor, int thiknes) {
-		IplImage src = cvCloneImage(img);
-		drawContour(src, innerContour, innColor, thiknes);
-		drawContour(src, outerContour, outColor, thiknes);
-		//cvRelease(img);
-		return src;
+	void drawContours(IplImage img, CvScalar innColor, CvScalar outColor, int thiknes) {
+		drawContour(img, innerContour, innColor, thiknes);
+		drawContour(img, outerContour, outColor, thiknes);
 	}
 	
-	private IplImage drawContour(IplImage src, CvSeq countour, CvScalar color, int thiknes) {
+	private void drawContour(IplImage src, CvSeq countour, CvScalar color, int thiknes) {
 		cvDrawContours( 			// — нарисовать заданные контуры
 				 src, 				// — изображение на котором будут нарисованы контуры
 				 countour, 			// — указатель на первый контур
@@ -79,11 +84,9 @@ public class ContourHandler {
 				 					//   Если величина отрицательная, то область заливается выбранным цветом 
 				 8 					// — тип линии
 		);
-		return src;
 	}
 	
-	private CvSeq findContours(IplImage img) {
-		CvSeq contours = new CvSeq();
+	private void findContours(IplImage img, CvSeq contours) {
 		cvFindContours(
 				img,							// - исходное 8-битное одноканальное изображение 
 												//   (ненулевые пиксели обрабатываются как 1, а нулевые — 0)
@@ -105,17 +108,17 @@ public class ContourHandler {
 												//	 CV_LINK_RUNS				5 // алгоритм только для CV_RETR_LIST
 												//   (используется CV_CHAIN_APPROX_NONE так как нужна площадь (по фримену не считает))
 		);
-		return contours;
 	}
 	
 	
-	public CvPoint[] getPoints(CvSeq contour) {
+	private CvPoint[] getPoints(CvSeq contour) {
 
 		if (contour != null && !contour.isNull() && contour.total()>0) {
+			CvMemStorage storage = CvMemStorage.create();
 			CvSeq poly = cvApproxPoly(						// - ппроксимация контура(кривой) полигонами
 					contour, 								// - исходная последовательность или массив точек
 					Loader.sizeof(CvContour.class),			// - размер заголовка кривой(контура)
-					CvMemStorage.create(), 					// - хранилище контуров. (Если NULL, то используется хранилище входной последовательности)
+					storage, 								// - хранилище контуров. (Если NULL, то используется хранилище входной последовательности)
 					CV_POLY_APPROX_DP, 						// - метод аппроксимации
 															//   CV_POLY_APPROX_DP 		0 // Douglas-Peucker algorithm
 					cvContourPerimeter(contour) * 0.1		// — параметр метода аппроксимации 
@@ -133,9 +136,13 @@ public class ContourHandler {
 					CvPoint point = new CvPoint(cvGetSeqElem(poly, i));
 					points[i] = (point);
 				}
-				return sortPoints(points);
-				//return points;
+				storage.release();
+				cvRelease(poly);
+				return points;
+				//return sortPoints(points);
 			} else {
+				storage.release();
+				cvRelease(poly);
 				return null;
 			}
 		} else {
@@ -143,36 +150,41 @@ public class ContourHandler {
 		}
 	}
 	
-	public static CvPoint[] sortPoints(CvPoint[] points) {
-		CvPoint[] result = points;
-		// - сортировка  по x - 
-		for (int i = result.length-1 ; i > 0 ; i--) {  	// Внешний цикл каждый раз сокращает фрагмент массива, так как внутренний цикл каждый раз ставит в конец фрагмента максимальный элемент
-			for (int j = 0 ; j < i ; j++) {
-				if (result[j].x() > result[j+1].x()) {  // Сравниваем элементы попарно, если они имеют неправильный порядок, то меняем местами
-					CvPoint tmp = result[j];
-					result[j] = result[j+1];
-					result[j+1] = tmp;
-				}
-	        }
-	    }
-		
-		// сортировка по  y - 
-		CvPoint p1 = result[0];
-		CvPoint p2 = result[1];
-		if (p1.y() > p2.y()) {
-			result[0] = p2;
-			result[1] = p1;
-		}
-		CvPoint p3 = result[2];
-		CvPoint p4 = result[3];
-		if (p3.y() < p3.y()) {
-			result[2] = p4;
-			result[3] = p3;
-		}
-		return result;
-	}
 	
-	public static CvPoint[] getMiddlePoints(CvPoint[] points_1, CvPoint[] points_2) {
+//	TODO ошибка в алгоритме. Работает без него!
+//	private static CvPoint[] sortPoints(CvPoint[] points) {
+//		CvPoint[] result = points;
+//		// - сортировка  по x - 
+//		for (int i = result.length-1 ; i > 0 ; i--) {  	// Внешний цикл каждый раз сокращает фрагмент массива, 
+//														// так как внутренний цикл каждый раз ставит в конец фрагмента 
+//														// максимальный элемент
+//			for (int j = 0 ; j < i ; j++) {
+//				if (result[j].x() > result[j+1].x()) {  // Сравниваем элементы попарно, если они имеют неправильный порядок, 
+//														// то меняем местами
+//					CvPoint tmp = result[j];
+//					result[j] = result[j+1];
+//					result[j+1] = tmp;
+//				}
+//	        }
+//	    }
+//		
+//		// сортировка по  y - 
+//		CvPoint p1 = result[0];
+//		CvPoint p2 = result[1];
+//		if (p1.y() > p2.y()) {
+//			result[0] = p2;
+//			result[1] = p1;
+//		}
+//		CvPoint p3 = result[2];
+//		CvPoint p4 = result[3];
+//		if (p3.y() < p3.y()) {
+//			result[2] = p4;
+//			result[3] = p3;
+//		}
+//		return result;
+//	}
+	
+	private static CvPoint[] getMiddlePoints(CvPoint[] points_1, CvPoint[] points_2) {
 		CvPoint[] result = new CvPoint[4];
 		for (int i = 0; i < 4; i++) {
 			int max_x = 0;
@@ -201,10 +213,10 @@ public class ContourHandler {
 		return result;
 	}
 	
-	public IplImage drawPoints(IplImage src) {
+	public void drawPoints(IplImage src) {
 		if (innerContour.total() > 0 && outerContour.total() > 0) {
 		
-			CvPoint[] innerPoints= getPoints(innerContour);			
+			CvPoint[] innerPoints = getPoints(innerContour);			
 			CvPoint[] outerPoints = getPoints(outerContour);	
 			
 			if (innerPoints != null && outerPoints != null) {	
@@ -222,10 +234,9 @@ public class ContourHandler {
 				}
 			}
 		}
-		return src;
 	}
 	
-	public void drawCircle(IplImage src, CvPoint center, CvScalar color, int radius) {
+	private void drawCircle(IplImage src, CvPoint center, CvScalar color, int radius) {
 		 cvDrawCircle(				// — нарисовать круг
 				 src, 				// — изображение на котором будет нарисован круг
 				 center, 			// - центр круга
@@ -235,6 +246,10 @@ public class ContourHandler {
 				 10, 				// - тип линии
 				 0					// - Количество дробных битов в координатах центра и в значении радиуса.
 		);
+	}
+	
+	public void release() {
+		cvRelease(src);
 	}
 }
 
