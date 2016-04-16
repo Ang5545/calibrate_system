@@ -8,7 +8,7 @@ import org.bytedeco.javacpp.videoInputLib.videoInput;
 
 public class DeviceManager {
 
-	private int camIndex = 0;
+	private int camIndex = 1;
 	private CvSize resolution = new CvSize(1280, 960);
 	
 	

@@ -35,13 +35,16 @@ public class ContourHandler {
 
 
 	public ContourHandler(CvSize size) {
-		this.allContours  = new CvSeq();
-		this.innerContour = new CvSeq();
-		this.outerContour = new CvSeq();	
+//		this.allContours  = new CvSeq();
+//		this.innerContour = new CvSeq();
+//		this.outerContour = new CvSeq();	
 	}
 	
 	public void processImage(IplImage image) {
 
+		this.allContours  = new CvSeq();
+		this.innerContour = new CvSeq();
+		this.outerContour = new CvSeq();			
 		this.src = cvCloneImage(image);
 		
 		findContours(src, allContours);		
@@ -146,8 +149,9 @@ public class ContourHandler {
 		}
 	}
 	
-
+	
 	private CvPoint[] sortPoints(CvPoint[] points) {
+		
 		CvPoint[] result = points;
 		// - сортировка  по x - 
 		for (int i = result.length-1 ; i > 0 ; i--) {  	// Внешний цикл каждый раз сокращает фрагмент массива, 
@@ -162,7 +166,7 @@ public class ContourHandler {
 				}
 	        }
 	    }
-		
+
 		// сортировка по  y - 
 		CvPoint p1 = result[0];
 		CvPoint p2 = result[1];
@@ -172,7 +176,7 @@ public class ContourHandler {
 		}
 		CvPoint p3 = result[2];
 		CvPoint p4 = result[3];
-		if (p3.y() < p3.y()) {
+		if (p3.y() < p4.y()) {
 			result[2] = p4;
 			result[3] = p3;
 		}
