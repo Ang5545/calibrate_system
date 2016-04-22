@@ -5,7 +5,11 @@ import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -97,8 +101,9 @@ public class MainFrame extends JFrame{
 
 	private JPanel createCalibPanel(){
 		this.mainPan = new MainPanel(400, 400, "Calib panel");
-		mainPan.addStartAction(new StartGrub());
-		mainPan.addStoptAction(new StopGrub());
+		this.mainPan.addStartAction(new StartGrub());
+		this.mainPan.addStoptAction(new StopGrub());
+		this.mainPan.addSaveAction(new SaveImages());
 		return mainPan;
 	}
 	
@@ -172,6 +177,12 @@ public class MainFrame extends JFrame{
 			}
 		}
 	}
-
 	
+
+    
+	private class SaveImages implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			ih.saveImages();
+		}
+	}	
 }

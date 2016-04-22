@@ -15,6 +15,7 @@ public class MainPanel extends ImagePanel {
 	
 	private static final String START_BT_NAME = "Start grab";
 	private static final String STOP_BT_NAME  = "Stop Grab";
+	private static final String SAVE_IMGS_BT_NAME  = "Save images";
 	
 //	private JLabel label;
 //	private int imgWidth;
@@ -30,21 +31,29 @@ public class MainPanel extends ImagePanel {
 	
 	private JButton startGrab;
 	private JButton stopGrab;
+	private JButton saveImages;
+	
 	
 	public MainPanel(int width, int height, String name) {
 		super(width, height, IMG_WIDTH, IMG_HEIGHT);
 		this.setBorder(BorderFactory.createTitledBorder(name));
-		startGrab = new JButton(START_BT_NAME);
-		stopGrab = new JButton(STOP_BT_NAME);
+		this.startGrab = new JButton(START_BT_NAME);
+		this.stopGrab = new JButton(STOP_BT_NAME);
+		this.saveImages = new JButton(SAVE_IMGS_BT_NAME);
 		this.add(startGrab);
 		this.add(stopGrab);
+		this.add(saveImages);
 	}
 
-	public void addStartAction(ActionListener ls) {
-		startGrab.addActionListener(ls);
+	public void addStartAction(ActionListener as) {
+		startGrab.addActionListener(as);
 	}
 	
-	public void addStoptAction(ActionListener ls) {
-		stopGrab.addActionListener(ls);
+	public void addStoptAction(ActionListener as) {
+		stopGrab.addActionListener(as);
+	}
+	
+	public void addSaveAction(ActionListener as) {
+		saveImages.addActionListener(as);
 	}
 }

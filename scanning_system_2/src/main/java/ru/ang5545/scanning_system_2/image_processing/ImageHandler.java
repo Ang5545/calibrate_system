@@ -1,17 +1,21 @@
 package ru.ang5545.scanning_system_2.image_processing;
 
-import static org.bytedeco.javacpp.opencv_core.cvCloneImage;
-import static org.bytedeco.javacpp.opencv_core.cvReleaseImage;
-import static org.bytedeco.javacpp.opencv_core.cvSet;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
 
 import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
+import ru.ang5545.model.CalibFrameLine;
 import ru.ang5545.model.ThresholdParameters;
-//import static org.bytedeco.javacpp.helper.opencv_core.cvDrawContours;
 
 
 public class ImageHandler {
@@ -25,7 +29,7 @@ public class ImageHandler {
 
 	public ImageHandler(CvSize size) {
 		this.chanHandler = new ChannelHandler(size);
-		this.contHandler =  new ContourHandler(size);
+		this.contHandler = new ContourHandler();
 		this.contours = ImageHelper.createImage(size, 3);
 	}
 
@@ -37,10 +41,11 @@ public class ImageHandler {
 		chanHandler.processImg(img, redThPar, greenThPar, blueThPar);
 		contHandler.processImage(chanHandler.getRgbSumm());
 		
-		contHandler.drawContours(contours, CvScalar.BLUE, CvScalar.RED, 6);
-		contHandler.drawContours(result, CvScalar.GREEN, CvScalar.GREEN, 6);
+		contHandler.drawContours(contours, CvScalar.BLUE, CvScalar.BLUE, 5);
+		contHandler.drawContours(result, CvScalar.BLACK, CvScalar.BLACK, 5);
 		
 		contHandler.drawPoints(result);
+		contHandler.drawApproxLines(result);
 	}
 	
 	// ///////////////////////////////
@@ -81,4 +86,43 @@ public class ImageHandler {
 		cvReleaseImage(result);
 		contHandler.release();
 	}
+
+	private void saveImage(BufferedImage img, String fileName) {
+		try {
+			File outputfile = new File(fileName);
+			ImageIO.write(img, "png", outputfile);
+		} catch (IOException e) {
+		    System.out.println("connot save image " + fileName);
+		    e.printStackTrace();
+		}
+	}
+	
+	private void sleep(int milliseconds) {
+		try {
+		    Thread.sleep(milliseconds);   
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
+	}
+	
+	
+	public void saveImages() {
+//		cvSaveImage("/Users/fedormurashko/Desktop/1/origin.jpg", origin);
+//		cvSaveImage("/Users/fedormurashko/Desktop/1/redChannel.jpg", chanHandler.getRedChannel());
+//		cvSaveImage("/Users/fedormurashko/Desktop/1/greenChannel.jpg", chanHandler.getGreenChannel());
+//		cvSaveImage("/Users/fedormurashko/Desktop/1/blueChannel.jpg", chanHandler.getBlueChannel());
+		sleep(1000);
+		
+		cvSaveImage("/Users/fedormurashko/Desktop/1/origin.jpg", origin);
+		cvSaveImage("/Users/fedormurashko/Desktop/1/redChannel.jpg", chanHandler.getRedChannel());
+		cvSaveImage("/Users/fedormurashko/Desktop/1/greenChannel.jpg", chanHandler.getGreenChannel());
+		cvSaveImage("/Users/fedormurashko/Desktop/1/blueChannel.jpg", chanHandler.getBlueChannel());
+		cvSaveImage("/Users/fedormurashko/Desktop/1/contours.jpg", 	contours);
+		cvSaveImage("/Users/fedormurashko/Desktop/1/result.jpg", result);
+		cvSaveImage("/Users/fedormurashko/Desktop/1/getRgbSumm.jpg", chanHandler.getRgbSumm());
+		sleep(1000);
+	}
+	
+	
+	
 }

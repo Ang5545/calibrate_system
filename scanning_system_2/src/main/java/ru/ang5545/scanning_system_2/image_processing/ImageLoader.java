@@ -32,14 +32,18 @@ import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 public class ImageLoader {
 
 	private static final String IMAGES_DIR 	= "/resources/testImages/";
-	private static final String IMG_FORMAT 	= ".png";
+	//private static final String IMG_FORMAT 	= ".png";
+	
+	private static final String IMG_NAME = "/resources/arnold-frame.JPG";
+	
 	private int i;
+	private int i_max = 1; // = 14;
 	
 	private String dirPath;
 	private IplImage img;
 
 	public ImageLoader(){
-		this.dirPath =  Path.getAppPath() + IMAGES_DIR;
+		this.dirPath =  Path.getAppPath();// + IMAGES_DIR;
 		this.i = 1;
 	}
 	
@@ -54,9 +58,11 @@ public class ImageLoader {
 	
 	public IplImage grab() {
 		//sleep(1000);
-		String path = dirPath + "image" + i + IMG_FORMAT;
+		//String path = dirPath + "image" + i + IMG_FORMAT;
+		String path = dirPath + IMG_NAME;
+		
 		this.img	= cvLoadImage(path, 3);
-		this.i = i < 14 ? i + 1 :  1;
+		this.i = i < i_max ? i + 1 :  1;
 		return img;
 	}
 
@@ -73,7 +79,8 @@ public class ImageLoader {
 	}
 	
 	public CvSize getResolution() {
-		String path = dirPath + "image" + i + IMG_FORMAT;
+		//String path = dirPath + "image" + i + IMG_FORMAT;
+		String path = dirPath + IMG_NAME;
 		IplImage img = cvLoadImage(path, 3);
 		CvSize size =  new CvSize(img.width(), img.height());
 		cvRelease(img);
