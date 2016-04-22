@@ -5,7 +5,6 @@
   <groupId>ru.ang5545</groupId>
   <artifactId>scanning_system_2</artifactId>
   <version>0.0.1</version>
-  <packaging>jar</packaging>
 
   <name>scanning_system_2</name>
   <url>http://maven.apache.org</url>

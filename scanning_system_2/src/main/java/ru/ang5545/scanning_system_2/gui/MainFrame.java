@@ -37,8 +37,8 @@ public class MainFrame extends JFrame{
 	private static final int IMG_PAN_WITH_SLIDER_HEIGHT = 240;
 	
 	private AnswerWorker aw;
-	private Grabber grabber;
-	//private ImageLoader grabber;
+	//private Grabber grabber;
+	private ImageLoader grabber;
 	
 	private DeviceManager dm;
 	private ImageHandler ih;
@@ -54,6 +54,7 @@ public class MainFrame extends JFrame{
 	private ImageChannelPanel green_channelsPan;
 	private ImageChannelPanel blue_channelsPan;
 
+	private ImagePanel result;
 	
 	public MainFrame() {
 		super(FRAME_NAME);
@@ -78,6 +79,8 @@ public class MainFrame extends JFrame{
 		centerPan.add(createСhannellsPanel(), 	BorderLayout.PAGE_END);
 		this.add(centerPan, 			BorderLayout.LINE_START);
 		this.add(createCalibPanel(),	BorderLayout.LINE_END);
+		this.add(createResultPanel(), 	BorderLayout.AFTER_LAST_LINE);
+		
 		
 		// - create default components - 
 		this.dm = new DeviceManager();
@@ -118,11 +121,17 @@ public class MainFrame extends JFrame{
 		return channelsPanel; 
 	}
 	
+	private JPanel createResultPanel() {
+		JPanel pan = new JPanel();
+		result = new ImagePanel(IMG_PAN_WIDTH, IMG_PAN_HEIGHT, "Result");
+		pan.add(result);
+		return pan;
+	}
 	
 	private class StartGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			grabber = new Grabber(dm.getCamIndex());
-			//grabber = new ImageLoader();
+			//grabber = new Grabber(dm.getCamIndex());
+			grabber = new ImageLoader();
 			ih = new ImageHandler(grabber.getResolution());
 			aw = new AnswerWorker();
 			aw.execute();
@@ -162,8 +171,9 @@ public class MainFrame extends JFrame{
 				sumChanImg.setImage(ih.getRGBsumm());
 				countImg.setImage(ih.get_contour());
 				mainPan.setImage(ih.getResultl());
+				result.setImage(ih.getPerspetciveTransform());
 				
-				//grabber.release();
+				grabber.release();
 				ih.release();
 			}
 			return "succes";

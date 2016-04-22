@@ -23,21 +23,24 @@ public class ImageHandler {
 	private IplImage origin;
 	private IplImage contours;
 	private IplImage result;
-
+	private IplImage perspectiveTr;
+	
 	private ChannelHandler chanHandler;
 	private ContourHandler contHandler;
 
 	public ImageHandler(CvSize size) {
 		this.chanHandler = new ChannelHandler(size);
-		this.contHandler = new ContourHandler();
+		this.contHandler = new ContourHandler(size);
 		this.contours = ImageHelper.createImage(size, 3);
+		this.perspectiveTr = ImageHelper.createImage(size, 3);
 	}
 
 	public void processImage(IplImage img, ThresholdParameters redThPar, ThresholdParameters greenThPar, ThresholdParameters blueThPar) {
 		this.origin		= cvCloneImage(img);
 		this.result		= cvCloneImage(img);
 		cvSet(contours, CvScalar.WHITE);
-			
+		cvSet(perspectiveTr, CvScalar.WHITE);
+		
 		chanHandler.processImg(img, redThPar, greenThPar, blueThPar);
 		contHandler.processImage(chanHandler.getRgbSumm());
 		
@@ -45,7 +48,7 @@ public class ImageHandler {
 		contHandler.drawContours(result, CvScalar.BLACK, CvScalar.BLACK, 5);
 		
 		contHandler.drawPoints(result);
-		contHandler.drawApproxLines(result);
+		contHandler.perspictiveCorrection(origin, perspectiveTr);
 	}
 	
 	// ///////////////////////////////
@@ -79,6 +82,10 @@ public class ImageHandler {
 	
 	public BufferedImage getResultl() {
 		return ImageHelper.getBufferedImage(result);
+	}
+	
+	public BufferedImage getPerspetciveTransform() {
+		return ImageHelper.getBufferedImage(perspectiveTr);
 	}
 	
 	public void release() {
