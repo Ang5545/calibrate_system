@@ -35,7 +35,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 
-public class ContourHandler {
+class ContourHandler {
 
 	private IplImage src;
 	private CvSeq allContours;
@@ -91,22 +91,64 @@ public class ContourHandler {
 		if (innerPoints != null && outerPoints != null && src != null && !src.isNull()) {	
 //			CvMat map_matrix = cvCreateMat(3, 3, CV_32FC1);
 			
-			Mat mat = new Mat(3, 3, CV_32FC1);
+			//Mat mat = new Mat(3, 3, CV_32FC1);
 			
-		    Point2f c1 = new Point2f(4);
-		    Point2f c2 = new Point2f(4);
-		    
-		    c1.position(0).put(0, 			0);
-		    c1.position(1).put(src.width(), 0);
-		    c1.position(2).put(0, 			src.height());
-		    c1.position(3).put(src.width(), src.height());
-	
-		    c2.position(0).put(218, 127);
-		    c2.position(1).put(227, 768);
-		    c2.position(2).put(1210, 770);
-		    c2.position(3).put(1212, 114);
-		    
-		    mat = getPerspectiveTransform(c1, c2);
+//		    Point2f c1 = new Point2f();
+//		    Point2f c2 = new Point2f();
+//		    
+//		    c1.put(0, 		0);
+//		    c1.put(1280,	0);
+//		    c1.put(0, 		960);
+//		    c1.put(1280, 	960);
+//		    
+//		    c2.put(218, 	127);
+//		    c2.put(227, 	768);
+//		    c2.put(1210, 	770);
+//		    c2.put(1212, 	114);
+//		    
+////		    c1.position(0).put(0, 		0);
+////		    c1.position(1).put(1280, 	0);
+////		    c1.position(2).put(0, 		960);
+////		    c1.position(3).put(1280, 	960);
+////		    c2.position(0).put(218, 127);
+////		    c2.position(1).put(227, 768);
+////		    c2.position(2).put(1210, 770);
+////		    c2.position(3).put(1212, 114);
+//		    
+//		    //mat = getPerspectiveTransform(c1, c2);
+//		    
+//		    cvRelease(c1.position(0));
+//		    //cvRelease(c2);
+			
+//			Mat mat = Highgui.imread("inputImage.jpg");
+			
+			Mat src_mat = new Mat(4, 1, CV_32FC2);
+			Mat dst_mat = new Mat(4, 1, CV_32FC2);
+			
+			CvPoint[] middlePoints 		= getMiddlePoints(innerPoints, outerPoints);
+			CvPoint[] imgCornerPoints 	= getImgCornersPoints(src);
+			
+			for (int i = 0; i < 4; i++) {
+				src_mat.put(middlePoints[i]);
+				dst_mat.put(imgCornerPoints[i]);
+			}
+
+			Mat perspectiveTransform = getPerspectiveTransform(src_mat, dst_mat);
+			
+//			src_mat.p
+//			
+//			put(0, 0, 407.0, 74.0, 1606.0, 74.0, 420.0, 2589.0, 1698.0, 2589.0);
+//			dst_mat.put(0,0,0.0,0.0,1600.0,0.0, 0.0,2500.0,1600.0,2500.0);
+//			
+//			
+//			    Mat perspectiveTransform = Imgproc.getPerspectiveTransform(src_mat, dst_mat);
+//
+//			    Mat dst=mat.clone();
+//
+//			    Imgproc.warpPerspective(mat, dst, perspectiveTransform, new Size(1600,2500));
+//			    Highgui.imwrite("resultImage.jpg", dst);
+			    
+			    
 		}
 	}
 	
