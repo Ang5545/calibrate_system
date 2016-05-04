@@ -30,9 +30,24 @@ import javax.swing.JFrame;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.JavaCV;
+
+//import perspective_correction.Mat;
+//import perspective_correction.MatOfPoint2f;
+
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
+
+import java.io.File;
+import java.net.URL;
+import org.bytedeco.javacv.*;
+import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.indexer.*;
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
+import static org.bytedeco.javacpp.opencv_calib3d.*;
+import static org.bytedeco.javacpp.opencv_objdetect.*;
+
 
 
 class ContourHandler {
@@ -88,67 +103,38 @@ class ContourHandler {
 	
 	
 	public void perspictiveCorrection(IplImage src, IplImage dst) {
-		if (innerPoints != null && outerPoints != null && src != null && !src.isNull()) {	
-//			CvMat map_matrix = cvCreateMat(3, 3, CV_32FC1);
+		if (innerPoints != null && outerPoints != null && src != null && !src.isNull()) {
 			
-			//Mat mat = new Mat(3, 3, CV_32FC1);
+			// TODO сделать такой же порядок точек по умолчанию для всех операций
 			
-//		    Point2f c1 = new Point2f();
-//		    Point2f c2 = new Point2f();
-//		    
-//		    c1.put(0, 		0);
-//		    c1.put(1280,	0);
-//		    c1.put(0, 		960);
-//		    c1.put(1280, 	960);
-//		    
-//		    c2.put(218, 	127);
-//		    c2.put(227, 	768);
-//		    c2.put(1210, 	770);
-//		    c2.put(1212, 	114);
-//		    
-////		    c1.position(0).put(0, 		0);
-////		    c1.position(1).put(1280, 	0);
-////		    c1.position(2).put(0, 		960);
-////		    c1.position(3).put(1280, 	960);
-////		    c2.position(0).put(218, 127);
-////		    c2.position(1).put(227, 768);
-////		    c2.position(2).put(1210, 770);
-////		    c2.position(3).put(1212, 114);
-//		    
-//		    //mat = getPerspectiveTransform(c1, c2);
-//		    
-//		    cvRelease(c1.position(0));
-//		    //cvRelease(c2);
+			CvPoint objTopRightP 	= new CvPoint(1210, 	770);
+			CvPoint objTopLeftP 	= new CvPoint(227, 		776);
+			CvPoint objBttLeftP  	= new CvPoint(218,		127);
+			CvPoint objBttRightP 	= new CvPoint(1212, 	114);
 			
-//			Mat mat = Highgui.imread("inputImage.jpg");
+			CvPoint imgTopRightP 	= new CvPoint(src.width(), 	src.height());
+			CvPoint imgTopLeftP 	= new CvPoint(0, 			src.height());
+			CvPoint imgBttLeftP  	= new CvPoint(0,			0);
+			CvPoint imgBttRightP 	= new CvPoint(src.width(), 	0);
 			
-			Mat src_mat = new Mat(4, 1, CV_32FC2);
-			Mat dst_mat = new Mat(4, 1, CV_32FC2);
+			float[] sourcePoints = {
+					objTopLeftP.x(), 	objTopLeftP.y(),
+					objTopRightP.x(),	objTopRightP.y(),
+					objBttLeftP.x(),	objBttLeftP.y(),
+					objBttRightP.x(),	objBttRightP.y()
+			};
 			
-			CvPoint[] middlePoints 		= getMiddlePoints(innerPoints, outerPoints);
-			CvPoint[] imgCornerPoints 	= getImgCornersPoints(src);
-			
-			for (int i = 0; i < 4; i++) {
-				src_mat.put(middlePoints[i]);
-				dst_mat.put(imgCornerPoints[i]);
-			}
+			float[] distinPoints = {
+					imgTopLeftP.x(), 	imgTopLeftP.y(),
+					imgTopRightP.x(),	imgTopRightP.y(),
+					imgBttLeftP.x(),	imgBttLeftP.y(),
+					imgBttRightP.x(),	imgBttRightP.y()
+			};
+			 
+			CvMat perspectiveTransform = cvCreateMat(3,3,CV_32FC1);
+			cvGetPerspectiveTransform(sourcePoints, distinPoints, perspectiveTransform);
+			cvWarpPerspective(src, dst, perspectiveTransform);
 
-			Mat perspectiveTransform = getPerspectiveTransform(src_mat, dst_mat);
-			
-//			src_mat.p
-//			
-//			put(0, 0, 407.0, 74.0, 1606.0, 74.0, 420.0, 2589.0, 1698.0, 2589.0);
-//			dst_mat.put(0,0,0.0,0.0,1600.0,0.0, 0.0,2500.0,1600.0,2500.0);
-//			
-//			
-//			    Mat perspectiveTransform = Imgproc.getPerspectiveTransform(src_mat, dst_mat);
-//
-//			    Mat dst=mat.clone();
-//
-//			    Imgproc.warpPerspective(mat, dst, perspectiveTransform, new Size(1600,2500));
-//			    Highgui.imwrite("resultImage.jpg", dst);
-			    
-			    
 		}
 	}
 	
@@ -324,7 +310,7 @@ class ContourHandler {
 				drawCircle(src, middlePoints[i], CvScalar.WHITE, 14);
 				drawCircle(src, middlePoints[i], CvScalar.BLACK, 7);		
 				
-				System.out.println("middlePoints[" + i + "] x = " + middlePoints[i].x() +"; y = " + middlePoints[i].y()); 
+			//	System.out.println("middlePoints[" + i + "] x = " + middlePoints[i].x() +"; y = " + middlePoints[i].y()); 
 			}
 			
 			// -- draw diagonals -- 

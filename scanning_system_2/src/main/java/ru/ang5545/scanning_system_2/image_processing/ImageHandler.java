@@ -31,8 +31,8 @@ public class ImageHandler {
 	public ImageHandler(CvSize size) {
 		this.chanHandler = new ChannelHandler(size);
 		this.contHandler = new ContourHandler(size);
-		this.contours = ImageHelper.createImage(size, 3);
-		this.perspectiveTr = ImageHelper.createImage(size, 3);
+		this.contours 		= ImageHelper.createImage(size, 3);
+		this.perspectiveTr 	= ImageHelper.createImage(size, 3);
 	}
 
 	public void processImage(IplImage img, ThresholdParameters redThPar, ThresholdParameters greenThPar, ThresholdParameters blueThPar) {
