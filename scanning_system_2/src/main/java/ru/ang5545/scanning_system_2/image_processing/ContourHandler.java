@@ -6,6 +6,7 @@ import static org.bytedeco.javacpp.opencv_core.cvCloneImage;
 import static org.bytedeco.javacpp.opencv_core.cvGetSeqElem;
 import static org.bytedeco.javacpp.opencv_core.cvRelease;
 import static org.bytedeco.javacpp.opencv_core.cvSet;
+import static org.bytedeco.javacpp.opencv_core.cvSet2D;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_AA;
 import static org.bytedeco.javacpp.opencv_imgproc.CV_POLY_APPROX_DP;
 import static org.bytedeco.javacpp.opencv_imgproc.cvApproxPoly;
@@ -25,14 +26,13 @@ import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.CanvasFrame;
 
 import ru.ang5545.model.CalibFrameLine;
+
 import org.bytedeco.javacv.*;
+
 import javax.swing.JFrame;
+
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
-import org.bytedeco.javacv.JavaCV;
-
-//import perspective_correction.Mat;
-//import perspective_correction.MatOfPoint2f;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
@@ -40,14 +40,16 @@ import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.ByteBuffer;
+
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacpp.indexer.*;
+
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import static org.bytedeco.javacpp.opencv_calib3d.*;
 import static org.bytedeco.javacpp.opencv_objdetect.*;
-
 
 
 class ContourHandler {
@@ -56,13 +58,18 @@ class ContourHandler {
 	private CvSeq allContours;
 	private CvSeq innerContour;
 	private CvSeq outerContour;
-
+	private CvSeq middleContour;
+	
 	private CvPoint[] innerPoints;	
 	private CvPoint[] outerPoints;	
+	private CvPoint[] middlePoints;
+	private CvPoint[] imgCornersPoints;
 	
-
-      
-	public ContourHandler(CvSize size) {}
+	private CvSize resolution;
+	
+	public ContourHandler(CvSize resolution) {
+		this.resolution = resolution;
+	}
 	
 	public void processImage(IplImage image) {
 		this.allContours  = new CvSeq();
@@ -93,6 +100,12 @@ class ContourHandler {
 		if (innerContour.total() > 0 && outerContour.total() > 0) {
 			innerPoints = getPoints(innerContour);
 			outerPoints = getPoints(outerContour);
+			
+			if (innerPoints != null && outerPoints != null) {
+				middlePoints = getMiddlePoints(innerPoints, outerPoints);
+			} else {
+				middlePoints = null;
+			}
 		}
 	}
 	
@@ -101,43 +114,7 @@ class ContourHandler {
 		drawContour(img, outerContour, outColor, thiknes);
 	}
 	
-	
-	public void perspictiveCorrection(IplImage src, IplImage dst) {
-		if (innerPoints != null && outerPoints != null && src != null && !src.isNull()) {
-			
-			// TODO сделать такой же порядок точек по умолчанию для всех операций
-			
-			CvPoint objTopRightP 	= new CvPoint(1210, 	770);
-			CvPoint objTopLeftP 	= new CvPoint(227, 		776);
-			CvPoint objBttLeftP  	= new CvPoint(218,		127);
-			CvPoint objBttRightP 	= new CvPoint(1212, 	114);
-			
-			CvPoint imgTopRightP 	= new CvPoint(src.width(), 	src.height());
-			CvPoint imgTopLeftP 	= new CvPoint(0, 			src.height());
-			CvPoint imgBttLeftP  	= new CvPoint(0,			0);
-			CvPoint imgBttRightP 	= new CvPoint(src.width(), 	0);
-			
-			float[] sourcePoints = {
-					objTopLeftP.x(), 	objTopLeftP.y(),
-					objTopRightP.x(),	objTopRightP.y(),
-					objBttLeftP.x(),	objBttLeftP.y(),
-					objBttRightP.x(),	objBttRightP.y()
-			};
-			
-			float[] distinPoints = {
-					imgTopLeftP.x(), 	imgTopLeftP.y(),
-					imgTopRightP.x(),	imgTopRightP.y(),
-					imgBttLeftP.x(),	imgBttLeftP.y(),
-					imgBttRightP.x(),	imgBttRightP.y()
-			};
-			 
-			CvMat perspectiveTransform = cvCreateMat(3,3,CV_32FC1);
-			cvGetPerspectiveTransform(sourcePoints, distinPoints, perspectiveTransform);
-			cvWarpPerspective(src, dst, perspectiveTransform);
 
-		}
-	}
-	
 	private void drawContour(IplImage src, CvSeq countour, CvScalar color, int thiknes) {
 		cvDrawContours( 			// — нарисовать заданные контуры
 				 src, 				// — изображение на котором будут нарисованы контуры
@@ -289,9 +266,17 @@ class ContourHandler {
 		return result;
 	}
 	
+	private CvPoint[] getImgCornersPoints(CvSize size) {
+		CvPoint[] result = new CvPoint[4];		
+		result[0] = new CvPoint(0, 				0);
+		result[1] = new CvPoint(0, 				size.height());
+		result[2] = new CvPoint(size.width(),	size.height());
+		result[3] = new CvPoint(size.width(), 	0);
+		return result;
+	}
+	
 	
 	public void drawPoints(IplImage src) {
-
 		if (innerPoints != null && outerPoints != null) {	
 			for (int i = 0; i < 4; i++) {
 				CvPoint inP = innerPoints[i];
@@ -300,25 +285,27 @@ class ContourHandler {
 				cvDrawCircle(src, outP, 5, CvScalar.WHITE, -1, 8, 0);
 				cvLine(src, inP, outP, CvScalar.YELLOW, 3, CV_AA, 0);	
 			}
-			
-			CvPoint[] middlePoints = getMiddlePoints(outerPoints, innerPoints);
-			CvPoint[] imgCornersPoints = getImgCornersPoints(src);
-			
+		}
+	}
+	
+	public void drawCernelLines(IplImage src) {
+		if (middlePoints != null && imgCornersPoints != null) {	
 			for (int i = 0; i < 4; i++) {
 				cvLine(src, middlePoints[i], imgCornersPoints[i], CvScalar.WHITE, 3, CV_AA, 0);
 				drawCircle(src, middlePoints[i], CvScalar.BLACK, 20);
 				drawCircle(src, middlePoints[i], CvScalar.WHITE, 14);
 				drawCircle(src, middlePoints[i], CvScalar.BLACK, 7);		
-				
-			//	System.out.println("middlePoints[" + i + "] x = " + middlePoints[i].x() +"; y = " + middlePoints[i].y()); 
 			}
-			
-			// -- draw diagonals -- 
-//			cvLine(src, middlePoints[0], middlePoints[2], CvScalar.YELLOW, 3, CV_AA, 0);
-//			cvLine(src, middlePoints[1], middlePoints[3], CvScalar.YELLOW, 3, CV_AA, 0);
 		}
-
 	}
+	
+
+	
+	
+	public void drawFindRactangular(IplImage src, CvScalar color) {
+		ImageHelper.drawRactangular(src, middlePoints, color, 3);
+	}
+	
 	
 	private void drawCircle(IplImage src, CvPoint center, CvScalar color, int radius) {
 		 cvDrawCircle(				// — нарисовать круг
@@ -336,38 +323,10 @@ class ContourHandler {
 		cvRelease(src);
 	}
 	
-//	public CalibFrameLine getContourLine(CvPoint startPoint, CvPoint endPoint, CvSeq contour) {
-//		
-//		if (startPoint != null && endPoint != null && !contour.isNull() && contour != null && contour.total() > 0) {
-//
-//			boolean isLine = false;
-//			CalibFrameLine line = new CalibFrameLine();
-//			for (int i = 0; i < contour.total(); i++)  {
-//
-//				CvPoint point = new CvPoint(cvGetSeqElem(contour, i));
-//				if (point.x() == startPoint.x() && point.y() == startPoint.y() && !isLine) { 
-//					isLine = true;
-//				}
-//				if (point.x() == endPoint.x() && point.y() == endPoint.y() && isLine) {
-//					line.add(point);
-//					return line;
-//				}
-//				if (isLine) {
-//					line.add(point);
-//				}
-//			}
-//		}
-//		return null;
-//	}
-//	
 	
-	public void drawLine(IplImage src, CalibFrameLine line) {
-		for (int i = 0; i < line.size(); i ++) {
-			CvPoint point = line.get(i);
-			drawCircle(src, point, CvScalar.GREEN, 3);
-		}
+	public CvPoint[] getObjectPoints() {
+		return this.middlePoints;
 	}
-
 }
 
 

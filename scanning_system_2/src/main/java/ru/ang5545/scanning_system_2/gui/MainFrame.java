@@ -43,8 +43,8 @@ public class MainFrame extends JFrame{
 	private DeviceManager dm;
 	private ImageHandler ih;
 	
-	private MainPanel mainPan;
-	
+	//private MainPanel mainPan;
+	private CalibrationPanel calibPan;
 	
 	private ImagePanel origImg;
 	private ImagePanel sumChanImg;
@@ -54,8 +54,8 @@ public class MainFrame extends JFrame{
 	private ImageChannelPanel green_channelsPan;
 	private ImageChannelPanel blue_channelsPan;
 
-	private ImagePanel result;
-	
+
+
 	public MainFrame() {
 		super(FRAME_NAME);
 		// - set window parameters - 
@@ -79,7 +79,7 @@ public class MainFrame extends JFrame{
 		centerPan.add(createСhannellsPanel(), 	BorderLayout.PAGE_END);
 		this.add(centerPan, 			BorderLayout.LINE_START);
 		this.add(createCalibPanel(),	BorderLayout.LINE_END);
-		this.add(createResultPanel(), 	BorderLayout.AFTER_LAST_LINE);
+	//	this.add(createResultPanel(), 	BorderLayout.AFTER_LAST_LINE);
 		
 		
 		// - create default components - 
@@ -103,11 +103,10 @@ public class MainFrame extends JFrame{
 	}
 
 	private JPanel createCalibPanel(){
-		this.mainPan = new MainPanel(400, 400, "Calib panel");
-		this.mainPan.addStartAction(new StartGrub());
-		this.mainPan.addStoptAction(new StopGrub());
-		this.mainPan.addSaveAction(new SaveImages());
-		return mainPan;
+		calibPan = new CalibrationPanel();
+		this.calibPan.addStartAction(new StartGrub());
+		this.calibPan.addStoptAction(new StopGrub());
+		return calibPan;
 	}
 	
 	private JPanel createСhannellsPanel(){
@@ -121,12 +120,7 @@ public class MainFrame extends JFrame{
 		return channelsPanel; 
 	}
 	
-	private JPanel createResultPanel() {
-		JPanel pan = new JPanel();
-		result = new ImagePanel(IMG_PAN_WIDTH, IMG_PAN_HEIGHT, "Result");
-		pan.add(result);
-		return pan;
-	}
+
 	
 	private class StartGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
@@ -170,8 +164,11 @@ public class MainFrame extends JFrame{
 				
 				sumChanImg.setImage(ih.getRGBsumm());
 				countImg.setImage(ih.get_contour());
-				mainPan.setImage(ih.getResultl());
-				result.setImage(ih.getPerspetciveTransform());
+				calibPan.setFinfImage(ih.getResultl());
+				calibPan.setCalibrationResult(ih.getPerspectiveTr());
+				
+				//mainPan.setImage(ih.getResultl());
+//				result.setImage(ih.getPerspetciveTransform());
 				
 				grabber.release();
 				ih.release();

@@ -31,7 +31,7 @@ import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 public class ImageLoader {
 
-	private static final String IMAGES_DIR 	= "/resources/testImages/";
+	private static final String IMAGES_DIR 	= "/resources/testImagesFishEye/";
 	private static final String IMG_FORMAT 	= ".png";
 	
 	//private static final String IMG_NAME = "/resources/arnold-frame.JPG";

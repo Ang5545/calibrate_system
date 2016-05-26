@@ -15,6 +15,7 @@ import static org.bytedeco.javacpp.opencv_core.*;
 
 import java.awt.image.BufferedImage;
 
+import org.bytedeco.javacpp.opencv_core.CvPoint;
 import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
@@ -56,4 +57,14 @@ public class ImageHelper {
 		cvSet(img, CvScalar.BLACK);
 		return img;
 	}
+	
+	public static void drawRactangular(IplImage src, CvPoint[] points, CvScalar color, int thiknes) {
+		if (points != null) {	
+			cvLine(src, points[0], points[1], color, thiknes, CV_AA, 0);
+			cvLine(src, points[1], points[2], color, thiknes, CV_AA, 0);
+			cvLine(src, points[2], points[3], color, thiknes, CV_AA, 0);
+			cvLine(src, points[3], points[0], color, thiknes, CV_AA, 0);
+		}
+	}
+	
 }
