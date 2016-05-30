@@ -41,6 +41,8 @@ public class CalibrateHandler {
 	private IplImage grayObj;
 	private IplImage grayRectan;
 
+	private IplImage resultImage;
+	
 	private CvPoint[] objCernelsPoints;
 	private CvPoint[] resultRectPoints;
 
@@ -50,10 +52,11 @@ public class CalibrateHandler {
 	
 	public CalibrateHandler(CvSize resolution) {
 		this.perspectiveWrapedObj = ImageHelper.createImage(resolution, 3);
-		this.resultRectangular = ImageHelper.createImage(resolution, 3);
-		this.grayObj = ImageHelper.createImage(resolution, 1);
-		this.grayRectan = ImageHelper.createImage(resolution, 1);
-		this.centerPoint = getImageCenter(resolution);
+		this.resultRectangular 	  = ImageHelper.createImage(resolution, 3);
+		this.grayObj 			  = ImageHelper.createImage(resolution, 1);
+		this.grayRectan 		  = ImageHelper.createImage(resolution, 1);
+		this.resultImage 		  = ImageHelper.createImage(resolution, 1);
+		this.centerPoint 		  = getImageCenter(resolution);
 	}
 	
 	public void processImage(IplImage obj, CvPoint[] objCernelsPoints) {
@@ -63,20 +66,22 @@ public class CalibrateHandler {
 		cvSet(perspectiveWrapedObj, CvScalar.WHITE);
 		cvSet(resultRectangular, CvScalar.WHITE);
 		
-		
 		perspictiveCorrection(object, perspectiveWrapedObj);
-		ImageHelper.drawRactangular(resultRectangular, resultRectPoints, CvScalar.BLUE, 1);
+		cvCvtColor(perspectiveWrapedObj, grayObj, CV_BGR2GRAY);
+		List<CvPoint> objPoints = findExtremePoints(grayObj, 3);
 		
-		//cvCvtColor(perspectiveWrapedObj, grayObj
-		
+		ImageHelper.drawRactangular(resultRectangular, resultRectPoints, CvScalar.BLACK, 1);		
 		cvCvtColor(resultRectangular, grayRectan, CV_BGR2GRAY);
-		//drawPointsLines(grayRectan, CvScalar.RED);
-		
 		List<CvPoint> recPoints = findExtremePoints(grayRectan, 3);
-		if (recPoints != null) {
-			for (int i = 0; i < recPoints.size(); i++) {
-				cvDrawCircle(grayRectan, recPoints.get(i), 10, CvScalar.BLACK, -1, 8, 0);
-			}	
+		
+		resultImage = cvCloneImage(grayObj);
+		ImageHelper.drawRactangular(resultImage, resultRectPoints, CvScalar.BLACK, 1);
+		
+		for (int i = 0; i < recPoints.size(); i++) {
+			cvDrawCircle(resultImage, recPoints.get(i), 10, CvScalar.BLACK, -1, 8, 0);
+		}
+		for (int i = 0; i < objPoints.size(); i++) {
+			cvDrawCircle(resultImage, objPoints.get(i), 10, CvScalar.BLACK, -1, 8, 0);
 		}
 	}
 	
@@ -86,6 +91,10 @@ public class CalibrateHandler {
 	
 	public IplImage getpResultRectangular() {
 		return this.grayRectan;
+	}
+	
+	public IplImage getpResultImage() {
+		return this.resultImage;
 	}
 	
 	public void perspictiveCorrection(IplImage src, IplImage dst) {
@@ -129,6 +138,7 @@ public class CalibrateHandler {
 	
 	public void release() {
 		cvRelease(object);
+		cvRelease(resultImage);
 	}
 	
 	private CvPoint[] getResultRectPoints() {
@@ -163,30 +173,53 @@ public class CalibrateHandler {
 	
 	public List<CvPoint> findExtremePoints(IplImage src, int dimensionCount) {
 		List<CvPoint> result = new ArrayList<CvPoint>();
-		
 		int height = src.height();
 		int width = src.width();
-		int half_x = width/2;
-		int half_y = height/2;
-		
-		List<CvPoint> verticalPoints_1 = findExtremePoints(src, half_x, half_x+1, 0, height);
-		List<CvPoint> gorizontPoints_1 = findExtremePoints(src, 0, width, half_y, half_y+1);
-		
-		
-//		for (int i = 1; i <= dimensionCount; i++) {
-//			int x = x_step * i;
-//			int y = y_step * i;
-//			List<CvPoint> verticalPoints = findExtremePoints(src, x, x+1, 0, height);
-//			List<CvPoint> gorizontPoints = findExtremePoints(src, 0, width, y, y+1);
-//			if (verticalPoints != null && gorizontPoints!= null) {
-//				result.addAll(verticalPoints);
-//				result.addAll(verticalPoints);
-//				return result;
-//			}	
-//		}
-		return null;
+		int devider = dimensionCount + 1;
+		int x_step = width / devider;
+		int y_step = height / devider;
+
+		for (int i = 1; i < devider; i++) {
+			int x = x_step * i;
+			int y = y_step * i;
+			List<CvPoint> verticalPoints = findVerticalExtremePoints(src, x);
+			List<CvPoint> gorizontPoints = findGorizontalExtremePoints(src, y);
+			if (verticalPoints != null && gorizontPoints!= null) {
+				result.addAll(verticalPoints);
+				result.addAll(gorizontPoints);
+			}	
+		}
+		return result;
 	}
 	
+	
+	public List<CvPoint> findVerticalExtremePoints(IplImage src, int x) {
+		List<CvPoint> result = new ArrayList<CvPoint>();
+		ByteBuffer bb_src 	= src.createBuffer();
+		for(int y = 0; y < src.height(); y++) {
+			int index = y * src.widthStep() + x * src.nChannels();
+	    	int val = bb_src.get(index) & 0xFF;
+		    if (val < 255) {
+		    	result.add(new CvPoint(x, y));
+		    }
+//		   	cvDrawCircle(grayRectan, new CvPoint(x, y), 2, CvScalar.BLACK, -1, 8, 0);
+		}
+		return result;
+	}
+	
+	public List<CvPoint> findGorizontalExtremePoints(IplImage src, int y) {
+		List<CvPoint> result = new ArrayList<CvPoint>();
+		ByteBuffer bb_src 	= src.createBuffer();
+		for(int x = 0; x < src.width(); x++) {
+			int index = y * src.widthStep() + x * src.nChannels();
+	    	int val = bb_src.get(index) & 0xFF;
+		    if (val < 255) {
+		    	result.add(new CvPoint(x, y));
+		    }
+//		   	cvDrawCircle(grayRectan, new CvPoint(x, y), 2, CvScalar.BLACK, -1, 8, 0);
+		}
+		return result;
+	}
 	
 //	public List<CvPoint> findExtremePoints(IplImage src, int dimensionCount) {
 //		List<CvPoint> result = new ArrayList<CvPoint>();
@@ -214,31 +247,31 @@ public class CalibrateHandler {
 //		return null;
 //	}
 	
-	public List<CvPoint> findExtremePoints(IplImage src, int min_x, int max_x, int min_y, int max_y) {
-		ByteBuffer bb_src 	= src.createBuffer();
-		List<CvPoint> points = new ArrayList<CvPoint>();
-//
-//		System.out.println(" min_y = " +  min_y);
-//		System.out.println(" max_y = " +  max_y);
-//		System.out.println(" min_x = " +  min_x);
-//		System.out.println(" max_x = " +  max_x);
-//		
-		for(int y = min_y; y < max_y; y++) {
-		    for(int x = min_x; x < max_x; x++) {
-		    	int index = y * src.widthStep() + x * src.nChannels();
-		    	cvSet2D(src, y, x, CvScalar.BLACK);
-		    	int val = bb_src.get(index) & 0xFF;
-			    if (val < 255) {
-			    	points.add(new CvPoint(x, y));
-			    }
-		    }
-		}
-		if (points.size() > 2) {
-			List<CvPoint> result = new ArrayList<CvPoint>();
-			result.add(points.get(0));
-			result.add(points.get(points.size()-1));	
-			return result;
-		} 
-		return null;
-	}
+//	public List<CvPoint> findExtremePoints(IplImage src, int min_x, int max_x, int min_y, int max_y) {
+//		ByteBuffer bb_src 	= src.createBuffer();
+//		List<CvPoint> points = new ArrayList<CvPoint>();
+////
+////		System.out.println(" min_y = " +  min_y);
+////		System.out.println(" max_y = " +  max_y);
+////		System.out.println(" min_x = " +  min_x);
+////		System.out.println(" max_x = " +  max_x);
+////		
+//		for(int y = min_y; y < max_y; y++) {
+//		    for(int x = min_x; x < max_x; x++) {
+//		    	int index = y * src.widthStep() + x * src.nChannels();
+//		    	cvSet2D(src, y, x, CvScalar.BLACK);
+//		    	int val = bb_src.get(index) & 0xFF;
+//			    if (val < 255) {
+//			    	points.add(new CvPoint(x, y));
+//			    }
+//		    }
+//		}
+//		if (points.size() > 2) {
+//			List<CvPoint> result = new ArrayList<CvPoint>();
+//			result.add(points.get(0));
+//			result.add(points.get(points.size()-1));	
+//			return result;
+//		} 
+//		return null;
+//	}
 }

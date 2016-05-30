@@ -105,7 +105,7 @@ public class ImageHandler {
 	
 	public BufferedImage getPerspectiveTr() {
 		//return ImageHelper.getBufferedImage(calibHandler.getpPerspectiveWraped());
-		return ImageHelper.getBufferedImage(calibHandler.getpResultRectangular());
+		return ImageHelper.getBufferedImage(calibHandler.getpResultImage());
 	}
 	
 	public void release() {
@@ -138,7 +138,7 @@ public class ImageHandler {
 //		cvSaveImage("/Users/fedormurashko/Desktop/1/origin.jpg", origin);
 //		cvSaveImage("/Users/fedormurashko/Desktop/1/redChannel.jpg", chanHandler.getRedChannel());
 //		cvSaveImage("/Users/fedormurashko/Desktop/1/greenChannel.jpg", chanHandler.getGreenChannel());
-//		cvSaveImage("/Users/fedormurashko/Desktop/1/blueChannel.jpg", chanHandler.getBlueChannel());
+		cvSaveImage("/home/fedor-m/Рабочий стол/test.jpg", calibHandler.getpResultImage());
 		sleep(2000);
 		
 //		cvSaveImage("/Users/fedormurashko/Desktop/1/perspective.jpg", perspectiveTr);

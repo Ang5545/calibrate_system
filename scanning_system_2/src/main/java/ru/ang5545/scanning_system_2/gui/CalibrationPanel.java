@@ -23,11 +23,11 @@ public class CalibrationPanel extends JPanel {
 	
 	public CalibrationPanel() {
 		super();
-		this.findObject = new ImagePanel(300, 200, "Find Object");
-		this.calibrationResult = new ImagePanel(300, 200, "Calibration");
-		this.startGrab = new JButton(START_BT_NAME);
-		this.stopGrab = new JButton(STOP_BT_NAME);
-		this.saveImages = new JButton(SAVE_IMGS_BT_NAME);
+		this.findObject 		= new ImagePanel(300, 200, "Find Object");
+		this.calibrationResult 	= new ImagePanel(300, 200, "Calibration");
+		this.startGrab 			= new JButton(START_BT_NAME);
+		this.stopGrab 			= new JButton(STOP_BT_NAME);
+		this.saveImages 		= new JButton(SAVE_IMGS_BT_NAME);
 		
 		this.setLayout(new BorderLayout());
 		
@@ -39,6 +39,7 @@ public class CalibrationPanel extends JPanel {
 		JPanel buttons = new JPanel();
 		buttons.add(startGrab);
 		buttons.add(stopGrab);
+		buttons.add(saveImages);
 		this.add(buttons, BorderLayout.PAGE_END);
 	}
 	

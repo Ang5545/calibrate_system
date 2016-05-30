@@ -106,6 +106,7 @@ public class MainFrame extends JFrame{
 		calibPan = new CalibrationPanel();
 		this.calibPan.addStartAction(new StartGrub());
 		this.calibPan.addStoptAction(new StopGrub());
+		this.calibPan.addSaveAction(new SaveImages());
 		return calibPan;
 	}
 	
