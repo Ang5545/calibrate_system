@@ -7,8 +7,10 @@ import static org.bytedeco.javacpp.opencv_imgproc.cvWarpPerspective;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import static org.bytedeco.javacpp.opencv_imgproc.cvDrawCircle;
+import java.util.ArrayList;
+import java.util.List;
 
+import static org.bytedeco.javacpp.opencv_imgproc.cvDrawCircle;
 import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 
 import org.bytedeco.*;
@@ -26,6 +28,8 @@ import org.bytedeco.javacv.MarkerDetector;
 import org.bytedeco.javacv.ProCamGeometricCalibrator;
 import org.bytedeco.javacv.ProjectorSettings;
 
+import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_imgproc.*;
 import ru.ang5545.model.ThresholdParameters;
 
 public class CalibrateHandler {
@@ -63,8 +67,17 @@ public class CalibrateHandler {
 		perspictiveCorrection(object, perspectiveWrapedObj);
 		ImageHelper.drawRactangular(resultRectangular, resultRectPoints, CvScalar.BLUE, 1);
 		
-		drawPointsLines(resultRectangular, CvScalar.RED);
+		//cvCvtColor(perspectiveWrapedObj, grayObj
 		
+		cvCvtColor(resultRectangular, grayRectan, CV_BGR2GRAY);
+		//drawPointsLines(grayRectan, CvScalar.RED);
+		
+		List<CvPoint> recPoints = findExtremePoints(grayRectan, 3);
+		if (recPoints != null) {
+			for (int i = 0; i < recPoints.size(); i++) {
+				cvDrawCircle(grayRectan, recPoints.get(i), 10, CvScalar.BLACK, -1, 8, 0);
+			}	
+		}
 	}
 	
 	public IplImage getpPerspectiveWraped() {
@@ -72,7 +85,7 @@ public class CalibrateHandler {
 	}
 	
 	public IplImage getpResultRectangular() {
-		return this.resultRectangular;
+		return this.grayRectan;
 	}
 	
 	public void perspictiveCorrection(IplImage src, IplImage dst) {
@@ -146,19 +159,86 @@ public class CalibrateHandler {
 			return null;
 		}
 	}
+
 	
-	public void drawPointsLines(IplImage src, CvScalar color) {
+	public List<CvPoint> findExtremePoints(IplImage src, int dimensionCount) {
+		List<CvPoint> result = new ArrayList<CvPoint>();
+		
+		int height = src.height();
+		int width = src.width();
+		int half_x = width/2;
+		int half_y = height/2;
+		
+		List<CvPoint> verticalPoints_1 = findExtremePoints(src, half_x, half_x+1, 0, height);
+		List<CvPoint> gorizontPoints_1 = findExtremePoints(src, 0, width, half_y, half_y+1);
+		
+		
+//		for (int i = 1; i <= dimensionCount; i++) {
+//			int x = x_step * i;
+//			int y = y_step * i;
+//			List<CvPoint> verticalPoints = findExtremePoints(src, x, x+1, 0, height);
+//			List<CvPoint> gorizontPoints = findExtremePoints(src, 0, width, y, y+1);
+//			if (verticalPoints != null && gorizontPoints!= null) {
+//				result.addAll(verticalPoints);
+//				result.addAll(verticalPoints);
+//				return result;
+//			}	
+//		}
+		return null;
+	}
+	
+	
+//	public List<CvPoint> findExtremePoints(IplImage src, int dimensionCount) {
+//		List<CvPoint> result = new ArrayList<CvPoint>();
+//		int devider = dimensionCount + 2;
+//		int height = src.height();
+//		int width = src.width();
+//		
+//		int x_step = width / devider;
+//		int y_step = height / devider;
+//
+//		System.out.println("height = " + height);
+//		System.out.println("width  = " + width);
+//		
+//		for (int i = 1; i <= dimensionCount; i++) {
+//			int x = x_step * i;
+//			int y = y_step * i;
+//			List<CvPoint> verticalPoints = findExtremePoints(src, x, x+1, 0, height);
+//			List<CvPoint> gorizontPoints = findExtremePoints(src, 0, width, y, y+1);
+//			if (verticalPoints != null && gorizontPoints!= null) {
+//				result.addAll(verticalPoints);
+//				result.addAll(verticalPoints);
+//				return result;
+//			}	
+//		}
+//		return null;
+//	}
+	
+	public List<CvPoint> findExtremePoints(IplImage src, int min_x, int max_x, int min_y, int max_y) {
 		ByteBuffer bb_src 	= src.createBuffer();
-		int x = src.width() / 2;
-		for(int y = 0; y < src.height(); y++) {
-			int index = y * src.widthStep() + x * src.nChannels();
-	        int val 	= bb_src.get(index) & 0xFF; 
-	        
-	        if (val > 0) {
-	        	cvDrawCircle(src, new CvPoint(x, y), 10, CvScalar.GREEN, -1, 8, 0);
-	        	System.out.println("hello");
-	        }
-	        cvSet2D(src, y, x, color );	   
+		List<CvPoint> points = new ArrayList<CvPoint>();
+//
+//		System.out.println(" min_y = " +  min_y);
+//		System.out.println(" max_y = " +  max_y);
+//		System.out.println(" min_x = " +  min_x);
+//		System.out.println(" max_x = " +  max_x);
+//		
+		for(int y = min_y; y < max_y; y++) {
+		    for(int x = min_x; x < max_x; x++) {
+		    	int index = y * src.widthStep() + x * src.nChannels();
+		    	cvSet2D(src, y, x, CvScalar.BLACK);
+		    	int val = bb_src.get(index) & 0xFF;
+			    if (val < 255) {
+			    	points.add(new CvPoint(x, y));
+			    }
+		    }
 		}
-}
+		if (points.size() > 2) {
+			List<CvPoint> result = new ArrayList<CvPoint>();
+			result.add(points.get(0));
+			result.add(points.get(points.size()-1));	
+			return result;
+		} 
+		return null;
+	}
 }
