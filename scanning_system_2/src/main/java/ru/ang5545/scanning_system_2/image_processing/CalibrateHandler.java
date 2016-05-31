@@ -27,10 +27,14 @@ import org.bytedeco.javacv.Marker;
 import org.bytedeco.javacv.MarkerDetector;
 import org.bytedeco.javacv.ProCamGeometricCalibrator;
 import org.bytedeco.javacv.ProjectorSettings;
-
 import static org.bytedeco.javacpp.opencv_core.*;
+import static org.bytedeco.javacpp.opencv_calib3d.*;
+
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 import ru.ang5545.model.ThresholdParameters;
+
+
+
 
 public class CalibrateHandler {
 
@@ -55,7 +59,7 @@ public class CalibrateHandler {
 		this.resultRectangular 	  = ImageHelper.createImage(resolution, 3);
 		this.grayObj 			  = ImageHelper.createImage(resolution, 1);
 		this.grayRectan 		  = ImageHelper.createImage(resolution, 1);
-		this.resultImage 		  = ImageHelper.createImage(resolution, 1);
+		this.resultImage 		  = ImageHelper.createImage(resolution, 3);
 		this.centerPoint 		  = getImageCenter(resolution);
 	}
 	
@@ -65,24 +69,146 @@ public class CalibrateHandler {
 		this.resultRectPoints = getResultRectPoints();
 		cvSet(perspectiveWrapedObj, CvScalar.WHITE);
 		cvSet(resultRectangular, CvScalar.WHITE);
+		cvSet(resultImage, CvScalar.WHITE);
 		
 		perspictiveCorrection(object, perspectiveWrapedObj);
 		cvCvtColor(perspectiveWrapedObj, grayObj, CV_BGR2GRAY);
-		List<CvPoint> objPoints = findExtremePoints(grayObj, 3);
+		List<CvPoint2D32f> objPoints = findExtremePoints(grayObj, 3);
 		
 		ImageHelper.drawRactangular(resultRectangular, resultRectPoints, CvScalar.BLACK, 1);		
 		cvCvtColor(resultRectangular, grayRectan, CV_BGR2GRAY);
-		List<CvPoint> recPoints = findExtremePoints(grayRectan, 3);
+		List<CvPoint2D32f> recPoints = findExtremePoints(grayRectan, 3);
 		
-		resultImage = cvCloneImage(grayObj);
-		ImageHelper.drawRactangular(resultImage, resultRectPoints, CvScalar.BLACK, 1);
+//		System.out.println("objPoints.size() = " + objPoints.size());
+//		System.out.println("recPoints.size() = " + recPoints.size());
 		
-		for (int i = 0; i < recPoints.size(); i++) {
-			cvDrawCircle(resultImage, recPoints.get(i), 10, CvScalar.BLACK, -1, 8, 0);
+		
+//		resultImage = cvCloneImage(grayObj);
+//		ImageHelper.drawRactangular(resultImage, resultRectPoints, CvScalar.BLACK, 1);
+		
+//		for (int i = 0; i < recPoints.size(); i++) {
+//			int x = (int) recPoints.get(i).x();
+//			int y = (int) recPoints.get(i).y();
+//			CvPoint p = new CvPoint(x, y);
+//			cvDrawCircle(resultImage, p, 10, CvScalar.BLACK, -1, 8, 0);
+//		}
+//		for (int i = 0; i < objPoints.size(); i++) {
+//			int x = (int) objPoints.get(i).x();
+//			int y = (int) objPoints.get(i).y();
+//			CvPoint p = new CvPoint(x, y);
+//			cvDrawCircle(resultImage, p, 10, CvScalar.BLACK, -1, 8, 0);
+//		}
+		
+		
+//		CvMat srcPoints = cvCreateMat(3,3,CV_32FC1);
+//		CvMat dstPoints = cvCreateMat(3,3,CV_32FC1);    
+//		CvMat homography = cvCreateMat(3,3,CV_32FC1);
+//		
+//		cvFindHomography(srcPoints, dstPoints, homography);
+		
+//		Mat distorted_src = new Mat();
+//		Mat undistort_dst = new Mat();
+//		
+//		
+//		
+//		Mat h = findHomography(distorted_src,undistort_dst);
+		
+//		MatOfPoint2f objMatOfPoint2f = new MatOfPoint2f();  
+//        objMatOfPoint2f.fromList(objectPoints);  
+//        
+//        
+//        
+//		CvMat homography = cvCreateMat(3,3,CV_32FC1);
+//		cvFindHomography(perspectiveWrapedObj, resultRectangular, homography);
+				//findHomography(perspectiveWrapedObj, resultRectangular);
+		
+		
+		// ~ ==========================================================================
+		
+		CvMat distorted_src = cvCreateMat(recPoints.size(), 2, CV_32FC1);
+		for(int s = 0; s < recPoints.size(); s++) {
+			CvPoint2D32f p = recPoints.get(s);                 
+			distorted_src.put(s, 0, p.x());
+			distorted_src.put(s, 1, p.y());
 		}
-		for (int i = 0; i < objPoints.size(); i++) {
-			cvDrawCircle(resultImage, objPoints.get(i), 10, CvScalar.BLACK, -1, 8, 0);
+		
+		CvMat undistort_dst = cvCreateMat(objPoints.size(), 2, CV_32FC1);
+		for(int s = 0; s < objPoints.size(); s++){
+			CvPoint2D32f p = objPoints.get(s);                         
+			undistort_dst.put(s, 0, p.x());
+			undistort_dst.put(s, 1, p.y());
 		}
+		
+		
+//		Mat drawtransform = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, size, 1.0, size * 2);
+//		undistort(inputimage, undistorted, cameraMatrix, distCoeffs, drawtransform);
+		
+		
+//		CvMat mat = cvCreateMat(3, 3, CV_32FC1);
+//		
+//		
+//		cvUndistortPoints(src, dst, camera_matrix, dist_coeffs);
+//		cvInitUndistortRectifyMap(undistort_dst, distorted_src, R, new_camera_matrix, mapx, mapy);
+//		
+//		cvFindHomography(distorted_src, undistort_dst, homography); 
+//		
+//		cvRemap(perspectiveWrapedObj, resultImage, homography, homography);
+		//cvWarpPerspective(perspectiveWrapedObj, resultImage, homography, INTER_LINEAR, CvScalar.WHITE);
+		
+		// ~ ==========================================================================
+		
+//		List<CvPoint2D32f> points = new ArrayList<CvPoint2D32f>();
+//		List<CvPoint2D32f> known = new ArrayList<CvPoint2D32f>();
+//		// points and known should be filled with valid values
+//		// here are just some ad-hoc numbers that do not result a singular (unsolvable) configuration 
+//		for(int i = 0; i < 2; i++) {
+//			points.add(cvPoint2D32f((double)i, 10 - 2 * (double)i));
+//			known.add(cvPoint2D32f((double)i, 10 - 2 * (double)i));
+//		}
+//		
+//		for(int i = 2; i < 5; i++) {
+//			points.add(cvPoint2D32f((double)i,(double)i));
+//		    known.add(cvPoint2D32f((double)i,(double)i));
+//		}
+
+		
+		
+		// ~ ======================================================================
+		
+//		CvMat matsrc = cvCreateMat(objPoints.size(), 2, CV_32FC1);
+//		CvMat matdst = cvCreateMat(recPoints.size(), 2, CV_32FC1);
+//
+//		
+//		// filling the matrices with the point coordinates
+//		for(int s = 0; s < objPoints.size(); s++) {
+//			CvPoint2D32f p = objPoints.get(s);//.get("Point");
+//		    //Add this point to matsrc                         
+//			matsrc.put(s, 0, p.x());
+//		    matsrc.put(s, 1, p.y());
+//		}
+//
+//		for(int s = 0; s < objPoints.size(); s++) {
+//			CvPoint2D32f p = objPoints.get(s);//.get("Point");
+//		    //Add this point to matdst                         
+//		    matdst.put(s, 0, p.x());
+//		    matdst.put(s, 1, p.y());
+//		}
+
+		
+//		CvMat mat = cvCreateMat(3, 3, CV_32FC1);
+//		cvFindHomography(matsrc, matdst, mat); //Here the matrices created are used to find the 3x3 Homography transform Matrix
+//		
+//		// displaying the resulting matrix
+//		for( int i = 0; i < 3; ++i) {
+//			for( int j = 0; j < 3; ++j) {
+//				System.out.print(mat.get(i,j) + ",      ");
+//			}
+//			System.out.println();
+//		}
+//		System.out.println("----------------------------------------------");
+//		
+//		//warpPerspective(im_src, im_undistort, h, size);
+//		cvWarpPerspective(perspectiveWrapedObj, resultImage, mat, INTER_LINEAR, CvScalar.WHITE);
 	}
 	
 	public IplImage getpPerspectiveWraped() {
@@ -138,7 +264,7 @@ public class CalibrateHandler {
 	
 	public void release() {
 		cvRelease(object);
-		cvRelease(resultImage);
+		//cvRelease(resultImage);
 	}
 	
 	private CvPoint[] getResultRectPoints() {
@@ -171,8 +297,8 @@ public class CalibrateHandler {
 	}
 
 	
-	public List<CvPoint> findExtremePoints(IplImage src, int dimensionCount) {
-		List<CvPoint> result = new ArrayList<CvPoint>();
+	public List<CvPoint2D32f> findExtremePoints(IplImage src, int dimensionCount) {
+		List<CvPoint2D32f> result = new ArrayList<CvPoint2D32f>();
 		int height = src.height();
 		int width = src.width();
 		int devider = dimensionCount + 1;
@@ -182,8 +308,8 @@ public class CalibrateHandler {
 		for (int i = 1; i < devider; i++) {
 			int x = x_step * i;
 			int y = y_step * i;
-			List<CvPoint> verticalPoints = findVerticalExtremePoints(src, x);
-			List<CvPoint> gorizontPoints = findGorizontalExtremePoints(src, y);
+			List<CvPoint2D32f> verticalPoints = findVerticalExtremePoints(src, x);
+			List<CvPoint2D32f> gorizontPoints = findGorizontalExtremePoints(src, y);
 			if (verticalPoints != null && gorizontPoints!= null) {
 				result.addAll(verticalPoints);
 				result.addAll(gorizontPoints);
@@ -193,30 +319,40 @@ public class CalibrateHandler {
 	}
 	
 	
-	public List<CvPoint> findVerticalExtremePoints(IplImage src, int x) {
-		List<CvPoint> result = new ArrayList<CvPoint>();
+	public List<CvPoint2D32f> findVerticalExtremePoints(IplImage src, int x) {
+		List<CvPoint2D32f> allPoints = new ArrayList<CvPoint2D32f>();
 		ByteBuffer bb_src 	= src.createBuffer();
 		for(int y = 0; y < src.height(); y++) {
 			int index = y * src.widthStep() + x * src.nChannels();
 	    	int val = bb_src.get(index) & 0xFF;
 		    if (val < 255) {
-		    	result.add(new CvPoint(x, y));
+		    	allPoints.add(new CvPoint2D32f(x, y));
 		    }
 //		   	cvDrawCircle(grayRectan, new CvPoint(x, y), 2, CvScalar.BLACK, -1, 8, 0);
+		}
+		List<CvPoint2D32f> result = new ArrayList<CvPoint2D32f>();
+		if (allPoints.size() >= 2) {
+			result.add(allPoints.get(0));
+			result.add(allPoints.get(allPoints.size()-1));
 		}
 		return result;
 	}
 	
-	public List<CvPoint> findGorizontalExtremePoints(IplImage src, int y) {
-		List<CvPoint> result = new ArrayList<CvPoint>();
+	public List<CvPoint2D32f> findGorizontalExtremePoints(IplImage src, int y) {
+		List<CvPoint2D32f> allPoints = new ArrayList<CvPoint2D32f>();
 		ByteBuffer bb_src 	= src.createBuffer();
 		for(int x = 0; x < src.width(); x++) {
 			int index = y * src.widthStep() + x * src.nChannels();
 	    	int val = bb_src.get(index) & 0xFF;
 		    if (val < 255) {
-		    	result.add(new CvPoint(x, y));
+		    	allPoints.add(new CvPoint2D32f(x, y));
 		    }
 //		   	cvDrawCircle(grayRectan, new CvPoint(x, y), 2, CvScalar.BLACK, -1, 8, 0);
+		}
+		List<CvPoint2D32f> result = new ArrayList<CvPoint2D32f>();
+		if (allPoints.size() >= 2) {
+			result.add(allPoints.get(0));
+			result.add(allPoints.get(allPoints.size()-1));
 		}
 		return result;
 	}
