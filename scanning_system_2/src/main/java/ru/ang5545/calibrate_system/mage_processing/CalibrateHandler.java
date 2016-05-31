@@ -1,4 +1,4 @@
-package ru.ang5545.scalibrate_system.mage_processing;
+package ru.ang5545.calibrate_system.mage_processing;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.INTER_LINEAR;

@@ -17,10 +17,10 @@ import javax.swing.SwingWorker;
 
 import ru.ang5545.calibrate_system.cam_acces.DeviceManager;
 import ru.ang5545.calibrate_system.cam_acces.Grabber;
+import ru.ang5545.calibrate_system.mage_processing.ImageHandler;
+import ru.ang5545.calibrate_system.mage_processing.ImageLoader;
 import ru.ang5545.calibrate_system.model.ThresholdParameters;
 import ru.ang5545.calibrate_system.utils.Path;
-import ru.ang5545.scalibrate_system.mage_processing.ImageHandler;
-import ru.ang5545.scalibrate_system.mage_processing.ImageLoader;
 
 //import com.apple.eawt.Application;
 

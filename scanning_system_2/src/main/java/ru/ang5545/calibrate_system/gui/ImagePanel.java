@@ -11,7 +11,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import ru.ang5545.scalibrate_system.mage_processing.ImageHelper;
+import ru.ang5545.calibrate_system.mage_processing.ImageHelper;
 
 public class ImagePanel extends JPanel{
 
