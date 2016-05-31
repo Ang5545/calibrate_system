@@ -1,4 +1,4 @@
-package ru.ang5545.calibrate_system.mage_processing;
+package ru.ang5545.calibrate_system.image_processing;
 
 import static org.bytedeco.javacpp.helper.opencv_core.CV_RGB;
 import static org.bytedeco.javacpp.opencv_core.*;
