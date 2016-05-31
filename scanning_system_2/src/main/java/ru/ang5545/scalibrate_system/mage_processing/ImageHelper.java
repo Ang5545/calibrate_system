@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.image_processing;
+package ru.ang5545.scalibrate_system.mage_processing;
 
 import java.awt.image.BufferedImage;
 

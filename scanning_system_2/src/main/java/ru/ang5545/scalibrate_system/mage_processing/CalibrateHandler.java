@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.image_processing;
+package ru.ang5545.scalibrate_system.mage_processing;
 
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.INTER_LINEAR;
@@ -20,6 +20,9 @@ import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.CameraDevice.Settings;
+
+import ru.ang5545.calibrate_system.model.ThresholdParameters;
+
 import org.bytedeco.javacv.CameraSettings;
 import org.bytedeco.javacv.GeometricCalibrator;
 import org.bytedeco.javacv.MarkedPlane;
@@ -31,7 +34,6 @@ import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_calib3d.*;
 
 import static org.bytedeco.javacpp.opencv_imgproc.*;
-import ru.ang5545.model.ThresholdParameters;
 
 
 

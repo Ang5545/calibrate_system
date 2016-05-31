@@ -1,6 +1,6 @@
-package ru.ang5545.scanning_system_2;
+package ru.ang5545.calibrate_system;
 
-import ru.ang5545.scanning_system_2.gui.MainFrame;
+import ru.ang5545.calibrate_system.gui.MainFrame;
 
 public class App {
 

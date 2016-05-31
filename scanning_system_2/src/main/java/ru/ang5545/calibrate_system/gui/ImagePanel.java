@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.gui;
+package ru.ang5545.calibrate_system.gui;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -11,7 +11,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import ru.ang5545.scanning_system_2.image_processing.ImageHelper;
+import ru.ang5545.scalibrate_system.mage_processing.ImageHelper;
 
 public class ImagePanel extends JPanel{
 

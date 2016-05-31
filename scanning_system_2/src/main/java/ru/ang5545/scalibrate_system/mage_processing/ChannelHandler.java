@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.image_processing;
+package ru.ang5545.scalibrate_system.mage_processing;
 
 import static org.bytedeco.javacpp.opencv_core.cvCloneImage;
 import static org.bytedeco.javacpp.opencv_core.cvInRangeS;
@@ -14,7 +14,7 @@ import org.bytedeco.javacpp.opencv_core.CvScalar;
 import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 
-import ru.ang5545.model.ThresholdParameters;
+import ru.ang5545.calibrate_system.model.ThresholdParameters;
 
 public class ChannelHandler {
 	

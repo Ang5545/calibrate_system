@@ -1,4 +1,4 @@
-package ru.ang5545.model;
+package ru.ang5545.calibrate_system.model;
 
 import java.util.ArrayList;
 import java.util.List;

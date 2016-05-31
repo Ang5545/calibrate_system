@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.image_processing;
+package ru.ang5545.scalibrate_system.mage_processing;
 
 import static org.bytedeco.javacpp.helper.opencv_imgproc.cvDrawContours;
 import static org.bytedeco.javacpp.helper.opencv_imgproc.cvFindContours;
@@ -25,7 +25,7 @@ import org.bytedeco.javacpp.opencv_core.CvSize;
 import org.bytedeco.javacpp.opencv_core.IplImage;
 import org.bytedeco.javacv.CanvasFrame;
 
-import ru.ang5545.model.CalibFrameLine;
+import ru.ang5545.calibrate_system.model.CalibFrameLine;
 
 import org.bytedeco.javacv.*;
 

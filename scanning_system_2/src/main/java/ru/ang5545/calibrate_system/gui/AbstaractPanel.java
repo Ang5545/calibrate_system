@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.gui;
+package ru.ang5545.calibrate_system.gui;
 
 import java.awt.Dimension;
 import java.awt.event.ActionListener;

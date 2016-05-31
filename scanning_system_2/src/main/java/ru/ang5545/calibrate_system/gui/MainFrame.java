@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.gui;
+package ru.ang5545.calibrate_system.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -15,12 +15,12 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingWorker;
 
-import ru.ang5545.model.ThresholdParameters;
-import ru.ang5545.scanning_system_2.cam_acces.DeviceManager;
-import ru.ang5545.scanning_system_2.cam_acces.Grabber;
-import ru.ang5545.scanning_system_2.image_processing.ImageHandler;
-import ru.ang5545.scanning_system_2.image_processing.ImageLoader;
-import ru.ang5545.utils.Path;
+import ru.ang5545.calibrate_system.cam_acces.DeviceManager;
+import ru.ang5545.calibrate_system.cam_acces.Grabber;
+import ru.ang5545.calibrate_system.model.ThresholdParameters;
+import ru.ang5545.calibrate_system.utils.Path;
+import ru.ang5545.scalibrate_system.mage_processing.ImageHandler;
+import ru.ang5545.scalibrate_system.mage_processing.ImageLoader;
 
 //import com.apple.eawt.Application;
 

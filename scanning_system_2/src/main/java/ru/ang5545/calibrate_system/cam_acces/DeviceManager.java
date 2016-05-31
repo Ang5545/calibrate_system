@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.cam_acces;
+package ru.ang5545.calibrate_system.cam_acces;
 
 import org.bytedeco.javacpp.opencv_core.CvSize;
 //import org.bytedeco.javacpp.opencv_highgui.CvCapture;

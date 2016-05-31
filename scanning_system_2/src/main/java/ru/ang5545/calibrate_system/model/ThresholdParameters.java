@@ -1,4 +1,4 @@
-package ru.ang5545.model;
+package ru.ang5545.calibrate_system.model;
 
 public class ThresholdParameters {
 	

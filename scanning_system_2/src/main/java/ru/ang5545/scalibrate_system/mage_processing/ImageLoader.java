@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.image_processing;
+package ru.ang5545.scalibrate_system.mage_processing;
 
 import static org.bytedeco.javacpp.helper.opencv_core.CV_RGB;
 import static org.bytedeco.javacpp.opencv_core.*;
@@ -25,7 +25,8 @@ import javax.swing.JFrame;
 import org.bytedeco.javacpp.*;
 import org.bytedeco.javacv.*;
 
-import ru.ang5545.utils.Path;
+import ru.ang5545.calibrate_system.utils.Path;
+
 import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 

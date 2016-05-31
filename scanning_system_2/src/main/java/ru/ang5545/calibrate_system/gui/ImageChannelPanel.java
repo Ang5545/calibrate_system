@@ -1,4 +1,4 @@
-package ru.ang5545.scanning_system_2.gui;
+package ru.ang5545.calibrate_system.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -29,7 +29,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import ru.ang5545.model.ThresholdParameters;
+import ru.ang5545.calibrate_system.model.ThresholdParameters;
 
 public class ImageChannelPanel extends ImagePanel {
 
