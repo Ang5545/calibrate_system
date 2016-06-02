@@ -1,5 +1,6 @@
 package ru.ang5545.calibrate_system.image_processing;
 
+
 import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.INTER_LINEAR;
 import static org.bytedeco.javacpp.opencv_imgproc.cvGetPerspectiveTransform;
@@ -40,6 +41,8 @@ import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 public class CalibrateHandler {
 
+	private CvSize resolution;
+	
 	private IplImage object;
 	private IplImage perspectiveWrapedObj;
 	private IplImage resultRectangular;
@@ -52,11 +55,11 @@ public class CalibrateHandler {
 	private CvPoint[] objCernelsPoints;
 	private CvPoint[] resultRectPoints;
 
-	
 	private CvPoint centerPoint;
 	
 	
 	public CalibrateHandler(CvSize resolution) {
+		this.resolution 		  = resolution;
 		this.perspectiveWrapedObj = ImageHelper.createImage(resolution, 3);
 		this.resultRectangular 	  = ImageHelper.createImage(resolution, 3);
 		this.grayObj 			  = ImageHelper.createImage(resolution, 1);
@@ -80,6 +83,43 @@ public class CalibrateHandler {
 		ImageHelper.drawRactangular(resultRectangular, resultRectPoints, CvScalar.BLACK, 1);		
 		cvCvtColor(resultRectangular, grayRectan, CV_BGR2GRAY);
 		List<CvPoint2D32f> recPoints = findExtremePoints(grayRectan, 3);
+		
+		
+		if (recPoints.size() > 0 && objPoints.size() == recPoints.size()) {
+			int pointsCount = objPoints.size();
+			
+			CvMat objectPoints = CvMat.create(pointsCount, 3);
+			CvMat imagePoints = CvMat.create(pointsCount, 3);
+			
+			CvMat cameraMatrix = CvMat.create(3, 3); 
+			CvMat distCoeffs = CvMat.create(5, 1);
+			
+
+			for(int p = 0; p < pointsCount; p++) {
+				objectPoints.put(p, 0, objPoints.get(p).x());
+				objectPoints.put(p, 1, objPoints.get(p).y());
+				objectPoints.put(p, 2, 0);
+			}
+			
+			for(int p = 0; p < pointsCount; p++) {
+				imagePoints.put(p, 0, recPoints.get(p).x());
+				imagePoints.put(p, 1, recPoints.get(p).y());
+				imagePoints.put(p, 2, 0);
+			}
+			
+			CvMat pointCountMat = CvMat.create(pointsCount, 1); //cvCreateMat(pointsCount, 1, CV_32SC1);
+			for(int i = 0; i < pointsCount; i++) {
+				pointCountMat.put(i, pointsCount);
+			}
+			
+			CvMat rotVectors = CvMat.create(pointsCount, 3);
+			CvMat transVectors = CvMat.create(pointsCount, 3);
+			
+			double error = cvCalibrateCamera2(objectPoints, imagePoints, pointCountMat, resolution, cameraMatrix, distCoeffs);
+//			double mm = cvCalibrateCamera2(object_points, image_points, point_counts, image_size, camera_matrix, distortion_coeffs)
+			System.out.println("error = " + error);
+		}
+		
 		
 //		System.out.println("objPoints.size() = " + objPoints.size());
 //		System.out.println("recPoints.size() = " + recPoints.size());
@@ -127,19 +167,19 @@ public class CalibrateHandler {
 		
 		// ~ ==========================================================================
 		
-		CvMat distorted_src = cvCreateMat(recPoints.size(), 2, CV_32FC1);
-		for(int s = 0; s < recPoints.size(); s++) {
-			CvPoint2D32f p = recPoints.get(s);                 
-			distorted_src.put(s, 0, p.x());
-			distorted_src.put(s, 1, p.y());
-		}
-		
-		CvMat undistort_dst = cvCreateMat(objPoints.size(), 2, CV_32FC1);
-		for(int s = 0; s < objPoints.size(); s++){
-			CvPoint2D32f p = objPoints.get(s);                         
-			undistort_dst.put(s, 0, p.x());
-			undistort_dst.put(s, 1, p.y());
-		}
+//		CvMat distorted_src = cvCreateMat(recPoints.size(), 2, CV_32FC1);
+//		for(int s = 0; s < recPoints.size(); s++) {
+//			CvPoint2D32f p = recPoints.get(s);                 
+//			distorted_src.put(s, 0, p.x());
+//			distorted_src.put(s, 1, p.y());
+//		}
+//		
+//		CvMat undistort_dst = cvCreateMat(objPoints.size(), 2, CV_32FC1);
+//		for(int s = 0; s < objPoints.size(); s++){
+//			CvPoint2D32f p = objPoints.get(s);                         
+//			undistort_dst.put(s, 0, p.x());
+//			undistort_dst.put(s, 1, p.y());
+//		}
 		
 		
 //		Mat drawtransform = getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, size, 1.0, size * 2);
@@ -211,6 +251,9 @@ public class CalibrateHandler {
 //		
 //		//warpPerspective(im_src, im_undistort, h, size);
 //		cvWarpPerspective(perspectiveWrapedObj, resultImage, mat, INTER_LINEAR, CvScalar.WHITE);
+		
+		
+		
 	}
 	
 	public IplImage getpPerspectiveWraped() {
