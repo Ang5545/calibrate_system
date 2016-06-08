@@ -77,12 +77,18 @@ public class ChessBoardTest {
         CvMat objectPoints = CvMat.create(count,3);
         int idx = 0;
 		for(int i = boardSize.height()-1; i>=0; i--){
-			for(int j=0; j < boardSize.width(); j++){
+			for(int j = 0; j < boardSize.width(); j++){
 				//objectPoints.position(f);
-				objectPoints.put(idx, 0,(double)(j));
-				objectPoints.put(idx, 1,(double)(i));
-				objectPoints.put(idx, 2,(double)(0));
+				objectPoints.put(idx, 0, (double) (j));
+				objectPoints.put(idx, 1, (double) (i));
+				objectPoints.put(idx, 2, (double) (0));
 				idx++;
+				
+				System.out.println(" ------ objectPoints idx = " + idx + " ------ ");
+				System.out.println(" x = " + (double) (j));
+				System.out.println(" y = " + (double) (i));
+				System.out.println(" z = " + (double) (0));
+				System.out.println(" --------------------------- ");
 			}
 		}
 		
@@ -96,6 +102,11 @@ public class ChessBoardTest {
 		for(int p = 0; p < count; p++) {
 			imagePoints.put(p, 0, imageCorners.position(p).x());
 			imagePoints.put(p, 1, imageCorners.position(p).y());
+			
+			System.out.println(" ------ imagePoints p = " + p + " ------ ");
+			System.out.println(" x = " + imageCorners.position(p).x());
+			System.out.println(" y = " + imageCorners.position(p).y());
+			System.out.println(" --------------------------- ");	
 		}
 		
 		CvMat pointCount = cvCreateMat(1, 1, CV_32SC1);
@@ -106,9 +117,7 @@ public class ChessBoardTest {
 		
 		CvMat mapx = CvMat.create(resolution.height(), resolution.width(), CV_32FC1);
 		CvMat mapy = CvMat.create(resolution.height(), resolution.width(), CV_32FC1);
-		
-		
-		
+
 		
 		cvInitUndistortMap(cameraMatrix, distCoeffs, mapx, mapy);
 		cvRemap(undistImg, undistImg, mapx, mapy, CV_INTER_LINEAR, CvScalar.ZERO);

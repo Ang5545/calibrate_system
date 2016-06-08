@@ -24,7 +24,7 @@ public class ImageHandler {
 	private IplImage contours;
 	private IplImage result;
 	private IplImage middleContours;
-
+	private IplImage calibrated;
 	
 	private ChannelHandler chanHandler;
 	private ContourHandler contHandler;
@@ -33,9 +33,10 @@ public class ImageHandler {
 	public ImageHandler(CvSize size) {
 		this.chanHandler = new ChannelHandler(size);
 		this.contHandler = new ContourHandler(size);
-		this.calibHandler = new CalibrateHandler(size);
+		this.calibHandler = new CalibrateHandler(size, 3);
 		this.contours 		= ImageHelper.createImage(size, 3);
 		this.middleContours	= ImageHelper.createImage(size, 3);
+		this.calibrated 	= ImageHelper.createImage(size, 3);
 	}
 
 	public void processImage(IplImage img, ThresholdParameters redThPar, ThresholdParameters greenThPar, ThresholdParameters blueThPar) {
@@ -43,6 +44,7 @@ public class ImageHandler {
 		this.result		= cvCloneImage(img);
 		cvSet(contours, CvScalar.WHITE);
 		cvSet(middleContours, CvScalar.WHITE);
+		cvSet(calibrated, CvScalar.WHITE);
 
 		chanHandler.processImg(img, redThPar, greenThPar, blueThPar);
 		contHandler.processImage(chanHandler.getRgbSumm());
@@ -55,7 +57,7 @@ public class ImageHandler {
 		
 		contHandler.drawContours(middleContours, CvScalar.BLACK, CvScalar.WHITE, 1);
 		calibHandler.processImage(middleContours, contHandler.getObjectPoints());
-		
+		calibHandler.calibrate(origin, calibrated);
 		
 		
 //		contHandler.drawContours(middleContours, CvScalar.BLUE, CvScalar.WHITE, 1);
@@ -101,6 +103,9 @@ public class ImageHandler {
 		return ImageHelper.getBufferedImage(result);
 	}
 	
+	public BufferedImage getCalibrated() {
+		return ImageHelper.getBufferedImage(calibrated);
+	}
 
 	
 	public BufferedImage getPerspectiveTr() {

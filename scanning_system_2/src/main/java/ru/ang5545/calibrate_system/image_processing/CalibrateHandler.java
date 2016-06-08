@@ -2,17 +2,11 @@ package ru.ang5545.calibrate_system.image_processing;
 
 
 import static org.bytedeco.javacpp.opencv_core.*;
-import static org.bytedeco.javacpp.opencv_imgproc.INTER_LINEAR;
-import static org.bytedeco.javacpp.opencv_imgproc.cvGetPerspectiveTransform;
-import static org.bytedeco.javacpp.opencv_imgproc.cvWarpPerspective;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.bytedeco.javacpp.opencv_imgproc.cvDrawCircle;
-import static org.bytedeco.javacpp.opencv_imgproc.cvtColor;
 
 import org.bytedeco.*;
 import org.bytedeco.javacpp.opencv_core.CvMat;
@@ -41,6 +35,7 @@ import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 public class CalibrateHandler {
 
+	private int deviderCount;
 	private CvSize resolution;
 	
 	private IplImage object;
@@ -57,9 +52,13 @@ public class CalibrateHandler {
 
 	private CvPoint centerPoint;
 	
+	private List<CvPoint2D32f> objVerticalPoints;
+	private List<CvPoint2D32f> objGorizontalPoints;
 	
-	public CalibrateHandler(CvSize resolution) {
+	
+	public CalibrateHandler(CvSize resolution, int deviderCount) {
 		this.resolution 		  = resolution;
+		this.deviderCount		  = deviderCount;
 		this.perspectiveWrapedObj = ImageHelper.createImage(resolution, 3);
 		this.resultRectangular 	  = ImageHelper.createImage(resolution, 3);
 		this.grayObj 			  = ImageHelper.createImage(resolution, 1);
@@ -79,48 +78,97 @@ public class CalibrateHandler {
 		perspictiveCorrection(object, perspectiveWrapedObj);
 		cvCvtColor(perspectiveWrapedObj, grayObj, CV_BGR2GRAY);
 		
-		ImageHelper.drawRactangular(resultRectangular, resultRectPoints, CvScalar.BLACK, 1);		
-		cvCvtColor(resultRectangular, grayRectan, CV_BGR2GRAY);
+//		ImageHelper.drawRactangular(resultRectangular, resultRectPoints, CvScalar.BLACK, 1);		
+//		cvCvtColor(resultRectangular, grayRectan, CV_BGR2GRAY);
+		
+		objVerticalPoints = findVeticalCalibratePPoints(grayObj, deviderCount);
+		objGorizontalPoints = findGorizontalCalibratePoints(grayObj, deviderCount);
 		
 		
-		// -- horizontal pixels handler --
-		List<CvPoint2D32f> objPoints = findExtremePoints(grayObj, 3);
-		List<CvPoint2D32f> recPoints = findExtremePoints(grayRectan, 3);
+		drawPoints(objGorizontalPoints, resultImage);
 		
-		drawPoints(objPoints, resultImage);
-		drawPoints(recPoints, resultImage);
+		//drawPoints(recPoints, resultImage);
 		
-		if (recPoints.size() > 0 && objPoints.size() == recPoints.size()) {
-			int width = 3;
-			int length = 3; 
-			int cornerCount = width * length;
-			
-			CvMat imagePoints = CvMat.create(cornerCount * recPoints.size(), 2, CV_32FC1);
-			CvMat objectPoints = CvMat.create(cornerCount * recPoints.size(), 3, CV_32FC1);
-			CvMat pointCounts = CvMat.create(recPoints.size(), 1, CV_32SC1);
-			
-			for (int i = 0; i < recPoints.size(); ++i) {
-				for (int j = 0; j < cornerCount; ++j) {
-					int idx = i * cornerCount + j;
-					imagePoints.put(idx, 0, objPoints.get(i).position(j).x());
-					imagePoints.put(idx, 1, objPoints.get(i).position(j).y());
-					objectPoints.put(idx, 0, recPoints.get(i).position(j).x());
-					objectPoints.put(idx, 1, recPoints.get(i).position(j).x());
-					objectPoints.put(idx, 2, 0);
-				}
-				pointCounts.put(i, cornerCount);
-			}
-	//		
-			CvMat cameraMatrix = CvMat.create(3, 3);
-			CvMat distCoeffs = CvMat.create(5, 1);
-	//		
-			double error = cvCalibrateCamera2(objectPoints, imagePoints, pointCounts, resolution, cameraMatrix, distCoeffs);
-			if (error > 0) {
-				System.out.println(" suuccess ");
-			}
-			System.out.println("error = " + error);
-		}
+//		int board_width = deviderCount;
+//        int board_height = deviderCount;
+//        int count = board_width * board_height;
+//		
+//        if (objPoints.size() == count) {
+//        
+//			CvMat imagePoints = CvMat.create(count, 2);
+//			for(int p = 0; p < count; p++) {
+//				imagePoints.put(p, 0, objPoints.get(p).x());
+//				imagePoints.put(p, 1, objPoints.get(p).y());	
+//			}
+//	
+//			CvMat objectPoints = CvMat.create(count,3);
+//			int idx = 0;
+//			for(int j = 0; j < board_width; j++) {;
+//				for(int i = board_height-1; i >= 0; i--) {
+//					objectPoints.put(idx, 0, (double) (j));
+//					objectPoints.put(idx, 1, (double) (i));
+//					objectPoints.put(idx, 2, (double) (0));
+//					idx++;
+//				}
+//			}
+//			
+//			
+//			
+//			
+//			CvMat pointCount = cvCreateMat(1, 1, CV_32SC1);
+//			pointCount.put(0, count);
+//			
+//			double error = cvCalibrateCamera2(objectPoints, imagePoints, pointCount, resolution, cameraMatrix, distCoeffs);
+//			
+//			if (error > 0) {
+//				System.out.println("error = " + error);
+//				CvMat mapx = CvMat.create(resolution.height(), resolution.width(), CV_32FC1);
+//				CvMat mapy = CvMat.create(resolution.height(), resolution.width(), CV_32FC1);
+//
+//				cvInitUndistortMap(cameraMatrix, distCoeffs, mapx, mapy);
+//				cvRemap(perspectiveWrapedObj, resultImage, mapx, mapy, CV_INTER_LINEAR, CvScalar.ZERO);
+//			}
+//			
+//        }
+	
 		
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------	
+		
+		
+//		if (recPoints.size() > 0 && objPoints.size() == recPoints.size()) {
+//			int width = 3;
+//			int length = 3; 
+//			int cornerCount = width * length;
+//			
+//			CvMat imagePoints = CvMat.create(cornerCount * recPoints.size(), 2, CV_32FC1);
+//			CvMat objectPoints = CvMat.create(cornerCount * recPoints.size(), 3, CV_32FC1);
+//			CvMat pointCounts = CvMat.create(recPoints.size(), 1, CV_32SC1);
+//			
+//			for (int i = 0; i < recPoints.size(); ++i) {
+//				for (int j = 0; j < cornerCount; ++j) {
+//					int idx = i * cornerCount + j;
+//					imagePoints.put(idx, 0, objPoints.get(i).position(j).x());
+//					imagePoints.put(idx, 1, objPoints.get(i).position(j).y());
+//					objectPoints.put(idx, 0, recPoints.get(i).position(j).x());
+//					objectPoints.put(idx, 1, recPoints.get(i).position(j).x());
+//					objectPoints.put(idx, 2, 0);
+//				}
+//				pointCounts.put(i, cornerCount);
+//			}
+//	//		
+//			CvMat cameraMatrix = CvMat.create(3, 3);
+//			CvMat distCoeffs = CvMat.create(5, 1);
+//	//		
+//			double error = cvCalibrateCamera2(objectPoints, imagePoints, pointCounts, resolution, cameraMatrix, distCoeffs);
+//			if (error > 0) {
+//				System.out.println(" suuccess ");
+//			}
+//			System.out.println("error = " + error);
+//		}
+
+
+		
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		
 //		List<CvPoint2D32f> objPoints = findExtremePoints(grayObj, 3);
 //		
@@ -333,10 +381,7 @@ public class CalibrateHandler {
 //		System.out.println("----------------------------------------------");
 //		
 //		//warpPerspective(im_src, im_undistort, h, size);
-//		cvWarpPerspective(perspectiveWrapedObj, resultImage, mat, INTER_LINEAR, CvScalar.WHITE);
-		
-		
-		
+//		cvWarpPerspective(perspectiveWrapedObj, resultImage, mat, INTER_LINEAR, CvScalar.WHITE);	
 	}
 	
 	public IplImage getpPerspectiveWraped() {
@@ -349,6 +394,49 @@ public class CalibrateHandler {
 	
 	public IplImage getpResultImage() {
 		return this.resultImage;
+	}
+	
+	
+	public void calibrate(IplImage src, IplImage dst) {
+		int board_width = deviderCount;
+		int board_height = deviderCount;
+		int count = board_width * board_height;
+		
+		if (objGorizontalPoints.size() == count) {
+      
+			perspictiveCorrection(src, dst);
+			
+			CvMat imagePoints = CvMat.create(count, 2);
+			for(int p = 0; p < count; p++) {
+				imagePoints.put(p, 0, objGorizontalPoints.get(p).x());
+				imagePoints.put(p, 1, objGorizontalPoints.get(p).y());	
+			}
+			
+			CvMat objectPoints = CvMat.create(count,3);
+			int idx = 0;
+			for(int j = 0; j < board_width; j++) {;
+				for(int i = board_height-1; i >= 0; i--) {
+					objectPoints.put(idx, 0, (double) (i));
+					objectPoints.put(idx, 1, (double) (j));
+					objectPoints.put(idx, 2, (double) (0));
+					idx++;
+				}
+			}
+			CvMat pointCount = cvCreateMat(1, 1, CV_32SC1);
+			pointCount.put(0, count);
+			
+			CvMat cameraMatrix = CvMat.create(3, 3);
+			CvMat distCoeffs = CvMat.create(5, 1);
+			
+			double error = cvCalibrateCamera2(objectPoints, imagePoints, pointCount, resolution, cameraMatrix, distCoeffs);
+			if (error > 0) {
+				CvMat mapx = CvMat.create(resolution.height(), resolution.width(), CV_32FC1);
+				CvMat mapy = CvMat.create(resolution.height(), resolution.width(), CV_32FC1);
+
+				cvInitUndistortMap(cameraMatrix, distCoeffs, mapx, mapy);
+				cvRemap(dst, dst, mapx, mapy, CV_INTER_LINEAR, CvScalar.ZERO);
+			}
+		}
 	}
 	
 	public void perspictiveCorrection(IplImage src, IplImage dst) {
@@ -424,9 +512,28 @@ public class CalibrateHandler {
 		}
 	}
 
-	
-	public List<CvPoint2D32f> findExtremePoints(IplImage src, int dimensionCount) {
+	public List<CvPoint2D32f> findVeticalCalibratePPoints(IplImage src, int dimensionCount) {
 		List<CvPoint2D32f> result = new ArrayList<CvPoint2D32f>();
+		int height = src.height();
+		int width = src.width();
+		int devider = dimensionCount + 1;
+		int y_step = height / devider;
+
+		for (int i = 1; i < devider; i++) {
+			int y = y_step * i;			
+			List<CvPoint2D32f> verticalPoints = findVerticalExtremePoints(src, y);
+			CvPoint2D32f verticalMiddlePoint = new CvPoint2D32f((width/2), y);
+			if (verticalPoints != null && verticalPoints.size() == 2) {
+				result.add(verticalPoints.get(0));
+				result.add(verticalMiddlePoint);
+				result.add(verticalPoints.get(1));
+			}	
+		}
+		return result;
+	}
+	
+	public List<CvPoint2D32f> findGorizontalCalibratePoints(IplImage src, int dimensionCount) {
+		List<CvPoint2D32f> points = new ArrayList<CvPoint2D32f>();
 		int height = src.height();
 		int width = src.width();
 		int devider = dimensionCount + 1;
@@ -436,19 +543,33 @@ public class CalibrateHandler {
 		for (int i = 1; i < devider; i++) {
 			int x = x_step * i;
 			int y = y_step * i;
-			//List<CvPoint2D32f> verticalPoints = findVerticalExtremePoints(src, x);
-			List<CvPoint2D32f> gorizontPoints = findGorizontalExtremePoints(src, y);
-			//if (verticalPoints != null && gorizontPoints!= null) {
-				//result.addAll(verticalPoints);
-			if (gorizontPoints!= null) {
-				result.addAll(gorizontPoints);
-			}	
+			List<CvPoint2D32f> gorizontalPoints = findGorizontalExtremePoints(src, x);
+			CvPoint2D32f gorizontalMiddlePoint = new CvPoint2D32f(x, (height/2));			
+			if (gorizontalPoints != null && gorizontalPoints.size() == 2) {
+				points.add(gorizontalPoints.get(0));
+				points.add(gorizontalMiddlePoint);
+				points.add(gorizontalPoints.get(1));
+			}
+		}
+		
+		// TODO сделать автоматом без привязки к dimCount
+		List<CvPoint2D32f> result = new ArrayList<CvPoint2D32f>();
+		if (points.size() == 9) {
+			result.add(points.get(0));
+			result.add(points.get(3));
+			result.add(points.get(6));
+			result.add(points.get(1));
+			result.add(points.get(4));
+			result.add(points.get(7));
+			result.add(points.get(2));
+			result.add(points.get(5));
+			result.add(points.get(8));
 		}
 		return result;
 	}
 	
 	
-	public List<CvPoint2D32f> findVerticalExtremePoints(IplImage src, int x) {
+	public List<CvPoint2D32f> findGorizontalExtremePoints(IplImage src, int x) {
 		List<CvPoint2D32f> allPoints = new ArrayList<CvPoint2D32f>();
 		ByteBuffer bb_src 	= src.createBuffer();
 		for(int y = 0; y < src.height(); y++) {
@@ -457,7 +578,6 @@ public class CalibrateHandler {
 		    if (val < 255) {
 		    	allPoints.add(new CvPoint2D32f(x, y));
 		    }
-//		   	cvDrawCircle(grayRectan, new CvPoint(x, y), 2, CvScalar.BLACK, -1, 8, 0);
 		}
 		List<CvPoint2D32f> result = new ArrayList<CvPoint2D32f>();
 		if (allPoints.size() >= 2) {
@@ -467,7 +587,7 @@ public class CalibrateHandler {
 		return result;
 	}
 	
-	public List<CvPoint2D32f> findGorizontalExtremePoints(IplImage src, int y) {
+	public List<CvPoint2D32f> findVerticalExtremePoints(IplImage src, int y) {
 		List<CvPoint2D32f> allPoints = new ArrayList<CvPoint2D32f>();
 		ByteBuffer bb_src 	= src.createBuffer();
 		for(int x = 0; x < src.width(); x++) {
@@ -476,7 +596,6 @@ public class CalibrateHandler {
 		    if (val < 255) {
 		    	allPoints.add(new CvPoint2D32f(x, y));
 		    }
-//		   	cvDrawCircle(grayRectan, new CvPoint(x, y), 2, CvScalar.BLACK, -1, 8, 0);
 		}
 		List<CvPoint2D32f> result = new ArrayList<CvPoint2D32f>();
 		if (allPoints.size() >= 2) {
@@ -541,11 +660,19 @@ public class CalibrateHandler {
 //	}
 	
 	private void drawPoints(List<CvPoint2D32f> points, IplImage img) {
+		CvFont font = new CvFont();
+        double hScale = 3;
+        double vScale = 3;
+        int    lineWidth = 3;
+        
+        cvInitFont(font,CV_FONT_HERSHEY_SIMPLEX, hScale,vScale,0,lineWidth, 8);
+        
 		for(int i = 0; i < points.size(); i++){
 			CvPoint2D32f point = points.get(i);
 			int x = (int) point.x();
-			int y = (int) point.y();
+			int y = (int) point.y(); 
 			cvDrawCircle(img, new CvPoint(x, y), 10, CvScalar.BLACK, -1, 8, 0);
+			cvPutText(img, String.valueOf(i), new CvPoint(x, y), font, CvScalar.BLACK);
 		}
 	}
 	

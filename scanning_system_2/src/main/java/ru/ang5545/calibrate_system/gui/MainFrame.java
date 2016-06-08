@@ -166,7 +166,8 @@ public class MainFrame extends JFrame{
 				sumChanImg.setImage(ih.getRGBsumm());
 				countImg.setImage(ih.get_contour());
 				calibPan.setFinfImage(ih.getResultl());
-				calibPan.setCalibrationResult(ih.getPerspectiveTr());
+				calibPan.setCalibrationResult(ih.getCalibrated());
+				//calibPan.setCalibrationResult(ih.getPerspectiveTr());
 				
 				//mainPan.setImage(ih.getResultl());
 //				result.setImage(ih.getPerspetciveTransform());
