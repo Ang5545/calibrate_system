@@ -30,10 +30,11 @@ public class ImageHandler {
 	private ContourHandler contHandler;
 	private CalibrateHandler calibHandler;
 
+
 	public ImageHandler(CvSize size) {
 		this.chanHandler = new ChannelHandler(size);
 		this.contHandler = new ContourHandler(size);
-		this.calibHandler = new CalibrateHandler(size, 3);
+		this.calibHandler = new CalibrateHandler(size, 3, 30);
 		this.contours 		= ImageHelper.createImage(size, 3);
 		this.middleContours	= ImageHelper.createImage(size, 3);
 		this.calibrated 	= ImageHelper.createImage(size, 3);
@@ -44,7 +45,6 @@ public class ImageHandler {
 		this.result		= cvCloneImage(img);
 		cvSet(contours, CvScalar.WHITE);
 		cvSet(middleContours, CvScalar.WHITE);
-		cvSet(calibrated, CvScalar.WHITE);
 
 		chanHandler.processImg(img, redThPar, greenThPar, blueThPar);
 		contHandler.processImage(chanHandler.getRgbSumm());
@@ -57,6 +57,7 @@ public class ImageHandler {
 		
 		contHandler.drawContours(middleContours, CvScalar.BLACK, CvScalar.WHITE, 1);
 		calibHandler.processImage(middleContours, contHandler.getObjectPoints());
+		
 		calibHandler.calibrate(origin, calibrated);
 		
 		
@@ -151,6 +152,9 @@ public class ImageHandler {
 		
 	}
 	
+	public void calibrate() {
+		
+	}
 	
 	
 }

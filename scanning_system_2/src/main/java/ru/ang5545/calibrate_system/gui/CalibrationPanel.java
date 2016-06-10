@@ -12,11 +12,11 @@ public class CalibrationPanel extends JPanel {
 	
 	private static final String START_BT_NAME = "Start grab";
 	private static final String STOP_BT_NAME  = "Stop Grab";
-	private static final String SAVE_IMGS_BT_NAME  = "Save images";
+	private static final String CALIBRATE     = "Calibrate";
 	
 	private JButton startGrab;
 	private JButton stopGrab;
-	private JButton saveImages;
+	private JButton calibrate;
 	
 	private ImagePanel findObject;
 	private ImagePanel calibrationResult;
@@ -27,7 +27,7 @@ public class CalibrationPanel extends JPanel {
 		this.calibrationResult 	= new ImagePanel(300, 200, "Calibration");
 		this.startGrab 			= new JButton(START_BT_NAME);
 		this.stopGrab 			= new JButton(STOP_BT_NAME);
-		this.saveImages 		= new JButton(SAVE_IMGS_BT_NAME);
+		this.calibrate 		    = new JButton(CALIBRATE);
 		
 		this.setLayout(new BorderLayout());
 		
@@ -39,7 +39,7 @@ public class CalibrationPanel extends JPanel {
 		JPanel buttons = new JPanel();
 		buttons.add(startGrab);
 		buttons.add(stopGrab);
-		buttons.add(saveImages);
+		buttons.add(calibrate);
 		this.add(buttons, BorderLayout.PAGE_END);
 	}
 	
@@ -51,8 +51,8 @@ public class CalibrationPanel extends JPanel {
 		stopGrab.addActionListener(as);
 	}
 	
-	public void addSaveAction(ActionListener as) {
-		saveImages.addActionListener(as);
+	public void addCalibrateAction(ActionListener as) {
+		calibrate.addActionListener(as);
 	}
 
 	public void setFinfImage(BufferedImage img) {
