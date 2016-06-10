@@ -37,8 +37,8 @@ public class MainFrame extends JFrame{
 	private static final int IMG_PAN_WITH_SLIDER_HEIGHT = 240;
 	
 	private AnswerWorker aw;
-	private Grabber grabber;
-	//private ImageLoader grabber;
+	//private Grabber grabber;
+	private ImageLoader grabber;
 	
 	private DeviceManager dm;
 	private ImageHandler ih;
@@ -125,8 +125,8 @@ public class MainFrame extends JFrame{
 	
 	private class StartGrub implements ActionListener {
 		public void actionPerformed(ActionEvent e) {
-			grabber = new Grabber(dm.getCamIndex());
-			//grabber = new ImageLoader();
+			//grabber = new Grabber(dm.getCamIndex());
+			grabber = new ImageLoader();
 			ih = new ImageHandler(grabber.getResolution());
 			aw = new AnswerWorker();
 			aw.execute();
@@ -172,7 +172,7 @@ public class MainFrame extends JFrame{
 				//mainPan.setImage(ih.getResultl());
 //				result.setImage(ih.getPerspetciveTransform());
 				
-				//grabber.release();
+				grabber.release();
 				ih.release();
 			}
 			return "succes";

@@ -58,8 +58,10 @@ public class CalibrateHandler {
 	private int maxShoot;
 	private int shootCount;
 	private double minError;
-	private CvMat optimalCamMatrix;
-	private CvMat optimalDistCoeffs; 
+	private CvMat verticalCamMatrix;
+	private CvMat verticalDistCoeffs;
+	private CvMat gorizontalCamMatrix;
+	private CvMat gorizontalDistCoeffs;
 	
 	public CalibrateHandler(CvSize resolution, int deviderCount, int maxShoot) {
 		this.resolution 		  = resolution;
@@ -72,8 +74,10 @@ public class CalibrateHandler {
 		this.centerPoint 		  = getImageCenter(resolution);
 		this.shootCount			  = 0;
 		this.maxShoot 			  = maxShoot;
-		this.optimalCamMatrix 	  = CvMat.create(3, 3);
-		this.optimalDistCoeffs 	  = CvMat.create(5, 1);
+		this.verticalCamMatrix 	  = CvMat.create(3, 3);
+		this.verticalDistCoeffs   = CvMat.create(5, 1);
+		this.gorizontalCamMatrix  = CvMat.create(3, 3);
+		this.gorizontalDistCoeffs = CvMat.create(5, 1);
 	}
 	
 	public void processImage(IplImage obj, CvPoint[] objCernelsPoints) {
@@ -93,33 +97,8 @@ public class CalibrateHandler {
 		objVerticalPoints = findVeticalCalibratePPoints(grayObj, deviderCount);
 		objGorizontalPoints = findGorizontalCalibratePoints(grayObj, deviderCount);
 		
-		if (shootCount >= maxShoot) {
-			shootCount = 0;
-			minError = 20;
-		} else {
-			shootCount++;
-		}
-		
-		calibrateCamera(objVerticalPoints, objGorizontalPoints, deviderCount);
-		
-//		int board_width = deviderCount;
-//		int board_height = deviderCount;
-//		int count = board_width * board_height;
-		
-//		if (objVerticalPoints.size() == count) {
-//			if (shootCount >= maxShoot) {
-//				shootCount = 0;
-//				minError = 20;
-//			} else {
-//				shootCount++;
-//			}
-//			calibrateCamera(objVerticalPoints, count, board_width, board_height);
-//		}
-		
-		
-		//drawPoints(objCernelsPoints, resultImage);
-		//drawPoints(objVerticalPoints, resultImage);
-		//drawPoints(recPoints, resultImage);
+		calculatingCalibrateCoefficient(objVerticalPoints, deviderCount, verticalCamMatrix, verticalDistCoeffs);
+		calculatingCalibrateCoefficient(objGorizontalPoints, deviderCount, gorizontalCamMatrix, gorizontalDistCoeffs);
 		
 	}
 	
@@ -136,36 +115,43 @@ public class CalibrateHandler {
 	}
 	
 	
-	public void calibrate(IplImage src, IplImage dst) {
-		if (!optimalCamMatrix.isNull() && !optimalDistCoeffs.isNull()) {
-			perspictiveCorrection(src, dst);
+	private void calibrate(IplImage src, IplImage dst, CvMat camMatrix,  CvMat distCoeffs) {
+		
+		if (!camMatrix.isNull() && !distCoeffs.isNull()) {
 			CvMat mapx = CvMat.create(resolution.height(), resolution.width(), CV_32FC1);
 			CvMat mapy = CvMat.create(resolution.height(), resolution.width(), CV_32FC1);
-			cvInitUndistortMap(optimalCamMatrix, optimalDistCoeffs, mapx, mapy);
+			cvInitUndistortMap(camMatrix, distCoeffs, mapx, mapy);
 			cvRemap(dst, dst, mapx, mapy, CV_INTER_LINEAR, CvScalar.ZERO);			
 			cvRelease(mapx);
 			cvRelease(mapy);
 		}
 	}
 	
-	private void calibrateCamera(List<CvPoint2D32f> objVerticalPoints, List<CvPoint2D32f> objGorizontalPoints, int deviderCount) {
+	public void calibrate(IplImage src, IplImage dst) {
+		cvSet(dst, CvScalar.WHITE);
+		perspictiveCorrection(src, dst);
+		calibrate(src, dst, verticalCamMatrix, verticalDistCoeffs);
+		calibrate(src, dst, gorizontalCamMatrix, gorizontalDistCoeffs);
+	}
+	
+	private void calculatingCalibrateCoefficient(List<CvPoint2D32f> objPoints, int deviderCount, CvMat camMatrix,  CvMat distCoeffs) {
 		int board_width = deviderCount;
 		int board_height = deviderCount;
 		int count = board_width * board_height;
 		
-		if (objVerticalPoints.size() == count && objGorizontalPoints.size() == count) {
+		if (objPoints.size() == count) {
 			
-			CvMat imagePoints = CvMat.create(count, 2);
+			CvMat imagePoints = CvMat.create(count, 2);	
 			for(int p = 0; p < count; p++) {
-				imagePoints.put(0+p, 0, objGorizontalPoints.get(p).x());
-				imagePoints.put(0+p, 1, objGorizontalPoints.get(p).y());	
+				imagePoints.put(p, 0, objPoints.get(p).x());
+				imagePoints.put(p, 1, objPoints.get(p).y());	
 			}
 
 			
 			CvMat objectPoints = CvMat.create(count, 3);
 			int idx = 0;
 			for (int j = 0; j < board_width; j++) {
-				for (int i = board_height-1; i >= 0; i--) {		
+				for (int i = board_height-1; i >= 0; i--) {
 					objectPoints.put(idx, 0, (double) (i));
 					objectPoints.put(idx, 1, (double) (j));
 					objectPoints.put(idx, 2, (double) (0));
@@ -176,22 +162,10 @@ public class CalibrateHandler {
 			CvMat pointCount = cvCreateMat(1, 1, CV_32SC1);
 			pointCount.put(0, count);
 			
-			CvMat cameraMatrix = CvMat.create(3, 3);
-			CvMat distCoeffs = CvMat.create(5, 1);
-			System.out.println("calibration");
-			double error = cvCalibrateCamera2(objectPoints, imagePoints, pointCount, resolution, cameraMatrix, distCoeffs);
-
-			if (error < minError) {
-				optimalCamMatrix = cameraMatrix.clone();
-				optimalDistCoeffs = distCoeffs.clone();
-				minError = error;
-			} 
-			
+			double error = cvCalibrateCamera2(objectPoints, imagePoints, pointCount, resolution, camMatrix, distCoeffs);
 			cvRelease(pointCount);
 			cvRelease(imagePoints);
 			cvRelease(objectPoints);
-			cvRelease(cameraMatrix);
-			cvRelease(distCoeffs);
 		}
 	}
 	

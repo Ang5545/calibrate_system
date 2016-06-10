@@ -38,6 +38,7 @@ public class ImageHandler {
 		this.contours 		= ImageHelper.createImage(size, 3);
 		this.middleContours	= ImageHelper.createImage(size, 3);
 		this.calibrated 	= ImageHelper.createImage(size, 3);
+		cvSet(calibrated, 	CvScalar.WHITE);
 	}
 
 	public void processImage(IplImage img, ThresholdParameters redThPar, ThresholdParameters greenThPar, ThresholdParameters blueThPar) {
