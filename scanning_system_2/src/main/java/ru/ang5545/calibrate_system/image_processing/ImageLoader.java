@@ -32,8 +32,8 @@ import static org.bytedeco.javacpp.opencv_imgcodecs.*;
 
 public class ImageLoader {
 
-	private static final String IMAGES_DIR 	= "/resources/testImagesFishEye/";
-	private static final String IMG_FORMAT 	= ".png";
+	private static final String IMAGES_DIR 	= "/resources/testImageFishEye2/";
+	private static final String IMG_FORMAT 	= ".jpg";
 	
 	//private static final String IMG_NAME = "/resources/arnold-frame.JPG";
 	
@@ -59,9 +59,8 @@ public class ImageLoader {
 	
 	public IplImage grab() {
 		//sleep(1000);
-		String path = dirPath + "image" + i + IMG_FORMAT;
+		String path = dirPath +  i + IMG_FORMAT;
 		//String path = dirPath + IMG_NAME;
-		
 		this.img	= cvLoadImage(path, 3);
 		this.i = i < i_max ? i + 1 :  1;
 		return img;
@@ -80,7 +79,7 @@ public class ImageLoader {
 	}
 	
 	public CvSize getResolution() {
-		String path = dirPath + "image" + i + IMG_FORMAT;
+		String path = dirPath + i + IMG_FORMAT;
 		//String path = dirPath + IMG_NAME;
 		IplImage img = cvLoadImage(path, 3);
 		CvSize size =  new CvSize(img.width(), img.height());
